@@ -1,0 +1,772 @@
+[
+  {
+    "id": "P001",
+    "name": "经典纯棉T恤",
+    "category": "上装/T恤",
+    "price": 89.0,
+    "original_price": 119.0,
+    "material": "100%新疆长绒棉",
+    "colors": [
+      "白色",
+      "黑色",
+      "灰色",
+      "藏青色"
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL",
+      "XXL"
+    ],
+    "description": "采用新疆长绒棉，亲肤透气，经典圆领设计，适合日常穿着。面料克重200g，不易变形。",
+    "image_url": "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&h=400&fit=crop",
+    "size_chart": {
+      "S": "胸围92cm 衣长66cm",
+      "M": "胸围98cm 衣长68cm",
+      "L": "胸围104cm 衣长70cm",
+      "XL": "胸围110cm 衣长72cm",
+      "XXL": "胸围116cm 衣长74cm"
+    },
+    "care_instructions": "可机洗，水温不超过30度，不可漂白，低温熨烫",
+    "tags": [
+      "基础款",
+      "百搭",
+      "纯棉",
+      "四季可穿"
+    ],
+    "stock_status": "充足",
+    "sales_count": 3280
+  },
+  {
+    "id": "P002",
+    "name": "修身牛仔裤",
+    "category": "下装/牛仔裤",
+    "price": 259.0,
+    "original_price": 329.0,
+    "material": "98%棉 2%氨纶",
+    "colors": [
+      "深蓝色",
+      "浅蓝色",
+      "黑色"
+    ],
+    "sizes": [
+      "28",
+      "29",
+      "30",
+      "31",
+      "32",
+      "33",
+      "34"
+    ],
+    "description": "修身版型，微弹面料，经典五袋设计，水洗工艺自然，穿着舒适不紧绷。",
+    "image_url": "https://images.unsplash.com/photo-1542272604-787c3835535d?w=400&h=400&fit=crop",
+    "size_chart": {
+      "28": "腰围71cm 臀围90cm 裤长100cm",
+      "29": "腰围73.5cm 臀围92.5cm 裤长101cm",
+      "30": "腰围76cm 臀围95cm 裤长102cm",
+      "31": "腰围78.5cm 臀围97.5cm 裤长103cm",
+      "32": "腰围81cm 臀围100cm 裤长104cm",
+      "33": "腰围83.5cm 臀围102.5cm 裤长105cm",
+      "34": "腰围86cm 臀围105cm 裤长106cm"
+    },
+    "care_instructions": "反面洗涤，冷水手洗或机洗，不可漂白",
+    "tags": [
+      "经典",
+      "修身",
+      "百搭",
+      "四季可穿"
+    ],
+    "stock_status": "充足",
+    "sales_count": 2150
+  },
+  {
+    "id": "P003",
+    "name": "轻薄羽绒服",
+    "category": "外套/羽绒服",
+    "price": 599.0,
+    "original_price": 899.0,
+    "material": "面料:100%涤纶 填充:90%白鸭绒",
+    "colors": [
+      "黑色",
+      "藏青色",
+      "军绿色",
+      "卡其色"
+    ],
+    "sizes": [
+      "M",
+      "L",
+      "XL",
+      "XXL"
+    ],
+    "description": "轻薄保暖，90%白鸭绒填充，蓬松度700+，立领设计，可收纳折叠，方便携带。",
+    "image_url": "https://images.unsplash.com/photo-1544923246-77307dd270aa?w=400&h=400&fit=crop",
+    "size_chart": {
+      "M": "胸围108cm 衣长68cm",
+      "L": "胸围114cm 衣长70cm",
+      "XL": "胸围120cm 衣长72cm",
+      "XXL": "胸围126cm 衣长74cm"
+    },
+    "care_instructions": "建议干洗，如水洗请使用中性洗涤剂，不可拧干",
+    "tags": [
+      "保暖",
+      "轻薄",
+      "秋冬",
+      "鸭绒"
+    ],
+    "stock_status": "部分色号紧张",
+    "sales_count": 1890
+  },
+  {
+    "id": "P004",
+    "name": "碎花连衣裙",
+    "category": "裙装/连衣裙",
+    "price": 329.0,
+    "original_price": 459.0,
+    "material": "100%雪纺",
+    "colors": [
+      "花色A",
+      "花色B",
+      "花色C"
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "description": "法式碎花设计，V领收腰，A字裙摆，优雅浪漫，内衬防走光，裙长及膝。",
+    "image_url": "https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?w=400&h=400&fit=crop",
+    "size_chart": {
+      "S": "胸围84cm 腰围66cm 裙长110cm",
+      "M": "胸围88cm 腰围70cm 裙长112cm",
+      "L": "胸围92cm 腰围74cm 裙长114cm",
+      "XL": "胸围96cm 腰围78cm 裙长116cm"
+    },
+    "care_instructions": "手洗推荐，冷水洗涤，不可漂白，阴凉处晾干",
+    "tags": [
+      "碎花",
+      "连衣裙",
+      "春夏",
+      "法式"
+    ],
+    "stock_status": "充足",
+    "sales_count": 1560
+  },
+  {
+    "id": "P005",
+    "name": "运动卫衣",
+    "category": "上装/卫衣",
+    "price": 199.0,
+    "original_price": 269.0,
+    "material": "80%棉 20%涤纶",
+    "colors": [
+      "黑色",
+      "灰色",
+      "白色",
+      "粉色"
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL",
+      "XXL"
+    ],
+    "description": "宽松版型，加绒内里，连帽设计，面料柔软不起球，帽檐有抽绳调节。",
+    "image_url": "https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=400&h=400&fit=crop",
+    "size_chart": {
+      "S": "胸围106cm 衣长67cm",
+      "M": "胸围112cm 衣长69cm",
+      "L": "胸围118cm 衣长71cm",
+      "XL": "胸围124cm 衣长73cm",
+      "XXL": "胸围130cm 衣长75cm"
+    },
+    "care_instructions": "可机洗，水温不超过30度，不可漂白",
+    "tags": [
+      "卫衣",
+      "加绒",
+      "运动",
+      "秋冬"
+    ],
+    "stock_status": "充足",
+    "sales_count": 2760
+  },
+  {
+    "id": "P006",
+    "name": "商务休闲POLO衫",
+    "category": "上装/POLO衫",
+    "price": 159.0,
+    "original_price": 219.0,
+    "material": "60%棉 40%涤纶 珠地网眼面料",
+    "colors": [
+      "白色",
+      "黑色",
+      "深蓝色",
+      "灰色",
+      "军绿色"
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL",
+      "XXL"
+    ],
+    "description": "珠地网眼面料，透气排汗，经典翻领设计，商务休闲两相宜。版型合体不紧身。",
+    "image_url": "https://images.unsplash.com/photo-1586363104862-3a5e2ab60d99?w=400&h=400&fit=crop",
+    "size_chart": {
+      "S": "胸围96cm 衣长67cm",
+      "M": "胸围102cm 衣长69cm",
+      "L": "胸围108cm 衣长71cm",
+      "XL": "胸围114cm 衣长73cm",
+      "XXL": "胸围120cm 衣长75cm"
+    },
+    "care_instructions": "可机洗，水温不超过40度，不可漂白，中温熨烫",
+    "tags": [
+      "POLO衫",
+      "商务",
+      "休闲",
+      "通勤"
+    ],
+    "stock_status": "充足",
+    "sales_count": 1920
+  },
+  {
+    "id": "P007",
+    "name": "亚麻短袖衬衫",
+    "category": "上装/衬衫",
+    "price": 199.0,
+    "original_price": 279.0,
+    "material": "100%天然亚麻",
+    "colors": [
+      "白色",
+      "米色",
+      "浅蓝色",
+      "卡其色"
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "description": "天然亚麻面料，透气凉爽，自带褶皱质感，日系文艺风格。适合夏季单穿或春秋内搭。",
+    "image_url": "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=400&h=400&fit=crop",
+    "size_chart": {
+      "S": "胸围100cm 衣长70cm",
+      "M": "胸围106cm 衣长72cm",
+      "L": "胸围112cm 衣长74cm",
+      "XL": "胸围118cm 衣长76cm"
+    },
+    "care_instructions": "建议手洗或干洗，不可机洗甩干，阴凉处晾干",
+    "tags": [
+      "亚麻",
+      "衬衫",
+      "夏季",
+      "文艺"
+    ],
+    "stock_status": "充足",
+    "sales_count": 870
+  },
+  {
+    "id": "P008",
+    "name": "弹力休闲裤",
+    "category": "下装/休闲裤",
+    "price": 189.0,
+    "original_price": 249.0,
+    "material": "68%棉 28%涤纶 4%氨纶",
+    "colors": [
+      "黑色",
+      "深灰色",
+      "卡其色",
+      "藏青色"
+    ],
+    "sizes": [
+      "28",
+      "29",
+      "30",
+      "31",
+      "32",
+      "33",
+      "34",
+      "36"
+    ],
+    "description": "高弹力面料，修身直筒版型，松紧腰设计，穿着舒适无束缚。适合日常通勤和休闲。",
+    "image_url": "https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?w=400&h=400&fit=crop",
+    "size_chart": {
+      "28": "腰围72cm 臀围92cm 裤长100cm",
+      "30": "腰围77cm 臀围97cm 裤长102cm",
+      "32": "腰围82cm 臀围102cm 裤长104cm",
+      "34": "腰围87cm 臀围107cm 裤长106cm",
+      "36": "腰围92cm 臀围112cm 裤长108cm"
+    },
+    "care_instructions": "可机洗，冷水洗涤，不可漂白，低温烘干",
+    "tags": [
+      "休闲裤",
+      "弹力",
+      "通勤",
+      "舒适"
+    ],
+    "stock_status": "充足",
+    "sales_count": 1640
+  },
+  {
+    "id": "P009",
+    "name": "牛津纺衬衫",
+    "category": "上装/衬衫",
+    "price": 179.0,
+    "original_price": 239.0,
+    "material": "100%纯棉牛津纺",
+    "colors": [
+      "白色",
+      "浅蓝色",
+      "粉色",
+      "灰色"
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL",
+      "XXL"
+    ],
+    "description": "经典牛津纺面料，质感厚实，领口有纽扣固定，休闲又不失正式。可单穿也可搭配西装外套。",
+    "image_url": "https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?w=400&h=400&fit=crop",
+    "size_chart": {
+      "S": "胸围98cm 衣长69cm",
+      "M": "胸围104cm 衣长71cm",
+      "L": "胸围110cm 衣长73cm",
+      "XL": "胸围116cm 衣长75cm",
+      "XXL": "胸围122cm 衣长77cm"
+    },
+    "care_instructions": "可机洗，水温不超过40度，可低温熨烫",
+    "tags": [
+      "衬衫",
+      "牛津纺",
+      "商务休闲",
+      "百搭"
+    ],
+    "stock_status": "充足",
+    "sales_count": 1380
+  },
+  {
+    "id": "P010",
+    "name": "工装短裤",
+    "category": "下装/短裤",
+    "price": 149.0,
+    "original_price": 199.0,
+    "material": "100%纯棉帆布",
+    "colors": [
+      "军绿色",
+      "卡其色",
+      "黑色",
+      "深灰色"
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL",
+      "XXL"
+    ],
+    "description": "宽松版型，多口袋工装设计，纯棉帆布面料耐磨耐穿。裤长在膝盖上方，适合夏季。",
+    "image_url": "https://images.unsplash.com/photo-1591195853828-11db59a44f6b?w=400&h=400&fit=crop",
+    "size_chart": {
+      "S": "腰围74cm 裤长48cm",
+      "M": "腰围78cm 裤长50cm",
+      "L": "腰围82cm 裤长52cm",
+      "XL": "腰围86cm 裤长54cm",
+      "XXL": "腰围90cm 裤长56cm"
+    },
+    "care_instructions": "可机洗，冷水洗涤，可漂白，中温熨烫",
+    "tags": [
+      "短裤",
+      "工装",
+      "夏季",
+      "休闲"
+    ],
+    "stock_status": "充足",
+    "sales_count": 980
+  },
+  {
+    "id": "P011",
+    "name": "针织开衫",
+    "category": "外套/针织衫",
+    "price": 239.0,
+    "original_price": 329.0,
+    "material": "50%羊毛 50%腈纶",
+    "colors": [
+      "驼色",
+      "灰色",
+      "深蓝色",
+      "黑色"
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "description": "含羊毛混纺面料，柔软亲肤，V领开襟设计，单排扣，适合春秋外搭或冬日内搭。",
+    "image_url": "https://images.unsplash.com/photo-1434389677669-e08b4cda3a11?w=400&h=400&fit=crop",
+    "size_chart": {
+      "S": "胸围100cm 衣长62cm",
+      "M": "胸围106cm 衣长64cm",
+      "L": "胸围112cm 衣长66cm",
+      "XL": "胸围118cm 衣长68cm"
+    },
+    "care_instructions": "建议干洗或手洗，平铺晾干，不可机洗甩干",
+    "tags": [
+      "针织",
+      "开衫",
+      "羊毛",
+      "春秋"
+    ],
+    "stock_status": "充足",
+    "sales_count": 1120
+  },
+  {
+    "id": "P012",
+    "name": "棒球领夹克",
+    "category": "外套/夹克",
+    "price": 359.0,
+    "original_price": 499.0,
+    "material": "面料:100%涤纶 内衬:100%涤纶",
+    "colors": [
+      "黑色",
+      "军绿色",
+      "藏青色"
+    ],
+    "sizes": [
+      "M",
+      "L",
+      "XL",
+      "XXL"
+    ],
+    "description": "棒球领设计，罗纹袖口和下摆，拉链开合，两侧插袋。运动休闲风格，适合春秋季节。",
+    "image_url": "https://images.unsplash.com/photo-1551028719-00167b16eac5?w=400&h=400&fit=crop",
+    "size_chart": {
+      "M": "胸围110cm 衣长65cm",
+      "L": "胸围116cm 衣长67cm",
+      "XL": "胸围122cm 衣长69cm",
+      "XXL": "胸围128cm 衣长71cm"
+    },
+    "care_instructions": "可机洗，冷水洗涤，不可漂白，不可烘干",
+    "tags": [
+      "夹克",
+      "棒球领",
+      "运动",
+      "春秋"
+    ],
+    "stock_status": "充足",
+    "sales_count": 760
+  },
+  {
+    "id": "P013",
+    "name": "高腰A字半身裙",
+    "category": "裙装/半身裙",
+    "price": 189.0,
+    "original_price": 259.0,
+    "material": "95%涤纶 5%氨纶",
+    "colors": [
+      "黑色",
+      "卡其色",
+      "深蓝色",
+      "墨绿色"
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "description": "高腰设计拉长腿部线条，A字版型修饰臀胯，侧拉链，内衬防走光。通勤休闲两用。",
+    "image_url": "https://images.unsplash.com/photo-1583496661160-fb5886a0aaaa?w=400&h=400&fit=crop",
+    "size_chart": {
+      "S": "腰围64cm 裙长42cm",
+      "M": "腰围68cm 裙长43cm",
+      "L": "腰围72cm 裙长44cm",
+      "XL": "腰围76cm 裙长45cm"
+    },
+    "care_instructions": "可机洗，冷水洗涤，不可漂白，低温熨烫",
+    "tags": [
+      "半身裙",
+      "高腰",
+      "A字裙",
+      "通勤"
+    ],
+    "stock_status": "充足",
+    "sales_count": 1340
+  },
+  {
+    "id": "P014",
+    "name": "纯棉格子衬衫",
+    "category": "上装/衬衫",
+    "price": 169.0,
+    "original_price": 229.0,
+    "material": "100%纯棉",
+    "colors": [
+      "红格",
+      "蓝格",
+      "绿格",
+      "黄格"
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL",
+      "XXL"
+    ],
+    "description": "经典格纹，纯棉面料柔软舒适，直筒版型，可单穿也可系在腰间做装饰。美式休闲风格。",
+    "image_url": "https://images.unsplash.com/photo-1598032895397-b9472444bf93?w=400&h=400&fit=crop",
+    "size_chart": {
+      "S": "胸围100cm 衣长68cm",
+      "M": "胸围106cm 衣长70cm",
+      "L": "胸围112cm 衣长72cm",
+      "XL": "胸围118cm 衣长74cm",
+      "XXL": "胸围124cm 衣长76cm"
+    },
+    "care_instructions": "可机洗，水温不超过40度，可低温熨烫，首次洗涤可能轻微掉色",
+    "tags": [
+      "格子",
+      "衬衫",
+      "休闲",
+      "美式"
+    ],
+    "stock_status": "充足",
+    "sales_count": 1050
+  },
+  {
+    "id": "P015",
+    "name": "束脚运动裤",
+    "category": "下装/运动裤",
+    "price": 139.0,
+    "original_price": 189.0,
+    "material": "65%棉 35%涤纶",
+    "colors": [
+      "黑色",
+      "灰色",
+      "深蓝色"
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL",
+      "XXL"
+    ],
+    "description": "束脚设计，松紧腰抽绳，侧边口袋，运动休闲两用面料，柔软透气。适合运动和居家。",
+    "image_url": "https://images.unsplash.com/photo-1552902865-b72c031ac5ea?w=400&h=400&fit=crop",
+    "size_chart": {
+      "S": "腰围68cm 臀围100cm 裤长96cm",
+      "M": "腰围72cm 臀围104cm 裤长98cm",
+      "L": "腰围76cm 臀围108cm 裤长100cm",
+      "XL": "腰围80cm 臀围112cm 裤长102cm",
+      "XXL": "腰围84cm 臀围116cm 裤长104cm"
+    },
+    "care_instructions": "可机洗，水温不超过30度，不可漂白",
+    "tags": [
+      "运动裤",
+      "束脚",
+      "休闲",
+      "舒适"
+    ],
+    "stock_status": "充足",
+    "sales_count": 2080
+  },
+  {
+    "id": "P016",
+    "name": "羊毛混纺大衣",
+    "category": "外套/大衣",
+    "price": 699.0,
+    "original_price": 999.0,
+    "material": "70%羊毛 30%涤纶",
+    "colors": [
+      "驼色",
+      "黑色",
+      "深灰色",
+      "藏青色"
+    ],
+    "sizes": [
+      "M",
+      "L",
+      "XL",
+      "XXL"
+    ],
+    "description": "含羊毛混纺面料，质感厚实挺括，双排扣设计，中长款，气场十足。适合秋冬通勤。",
+    "image_url": "https://images.unsplash.com/photo-1544923246-77307dd270aa?w=400&h=400&fit=crop",
+    "size_chart": {
+      "M": "胸围112cm 衣长95cm",
+      "L": "胸围118cm 衣长97cm",
+      "XL": "胸围124cm 衣长99cm",
+      "XXL": "胸围130cm 衣长101cm"
+    },
+    "care_instructions": "建议干洗，不可机洗，悬挂存放，避免挤压",
+    "tags": [
+      "大衣",
+      "羊毛",
+      "秋冬",
+      "通勤"
+    ],
+    "stock_status": "部分尺码紧张",
+    "sales_count": 680
+  },
+  {
+    "id": "P017",
+    "name": "印花圆领长袖T恤",
+    "category": "上装/T恤",
+    "price": 129.0,
+    "original_price": 179.0,
+    "material": "95%棉 5%氨纶",
+    "colors": [
+      "白色",
+      "黑色",
+      "灰色"
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL",
+      "XXL"
+    ],
+    "description": "前胸创意印花，微弹纯棉面料，圆领设计，版型宽松，适合春秋单穿或冬季内搭。",
+    "image_url": "https://images.unsplash.com/photo-1576566588028-4147f3842f27?w=400&h=400&fit=crop",
+    "size_chart": {
+      "S": "胸围98cm 衣长68cm",
+      "M": "胸围104cm 衣长70cm",
+      "L": "胸围110cm 衣长72cm",
+      "XL": "胸围116cm 衣长74cm",
+      "XXL": "胸围122cm 衣长76cm"
+    },
+    "care_instructions": "可机洗，水温不超过30度，反面洗涤保护印花，不可漂白",
+    "tags": [
+      "长袖",
+      "印花",
+      "春秋",
+      "潮流"
+    ],
+    "stock_status": "充足",
+    "sales_count": 920
+  },
+  {
+    "id": "P018",
+    "name": "西装裤",
+    "category": "下装/西裤",
+    "price": 229.0,
+    "original_price": 319.0,
+    "material": "70%涤纶 28%粘纤 2%氨纶",
+    "colors": [
+      "黑色",
+      "深灰色",
+      "藏青色"
+    ],
+    "sizes": [
+      "28",
+      "29",
+      "30",
+      "31",
+      "32",
+      "33",
+      "34",
+      "36"
+    ],
+    "description": "修身直筒版型，面料垂感好不易皱，拉链+纽扣门襟，两侧斜插袋。通勤正装首选。",
+    "image_url": "https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=400&h=400&fit=crop",
+    "size_chart": {
+      "28": "腰围72cm 臀围94cm 裤长102cm",
+      "30": "腰围77cm 臀围99cm 裤长104cm",
+      "32": "腰围82cm 臀围104cm 裤长106cm",
+      "34": "腰围87cm 臀围109cm 裤长108cm",
+      "36": "腰围92cm 臀围114cm 裤长110cm"
+    },
+    "care_instructions": "可机洗，冷水洗涤，低温熨烫，悬挂晾干",
+    "tags": [
+      "西裤",
+      "通勤",
+      "正装",
+      "修身"
+    ],
+    "stock_status": "充足",
+    "sales_count": 1450
+  },
+  {
+    "id": "P019",
+    "name": "纯棉polo短袖",
+    "category": "上装/POLO衫",
+    "price": 139.0,
+    "original_price": 189.0,
+    "material": "100%纯棉珠地棉",
+    "colors": [
+      "白色",
+      "黑色",
+      "深蓝色",
+      "酒红色",
+      "墨绿色"
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL",
+      "XXL"
+    ],
+    "description": "纯棉珠地面料，透气吸汗，经典翻领三粒扣，修身版型。适合商务休闲和高尔夫运动。",
+    "image_url": "https://images.unsplash.com/photo-1625910513413-5fc429e2ac63?w=400&h=400&fit=crop",
+    "size_chart": {
+      "S": "胸围94cm 衣长66cm",
+      "M": "胸围100cm 衣长68cm",
+      "L": "胸围106cm 衣长70cm",
+      "XL": "胸围112cm 衣长72cm",
+      "XXL": "胸围118cm 衣长74cm"
+    },
+    "care_instructions": "可机洗，水温不超过40度，不可漂白，中温熨烫",
+    "tags": [
+      "POLO衫",
+      "纯棉",
+      "商务",
+      "夏季"
+    ],
+    "stock_status": "充足",
+    "sales_count": 1680
+  },
+  {
+    "id": "P020",
+    "name": "连帽防晒衣",
+    "category": "外套/防晒衣",
+    "price": 169.0,
+    "original_price": 239.0,
+    "material": "100%涤纶 UPF50+防晒面料",
+    "colors": [
+      "白色",
+      "浅灰色",
+      "粉色",
+      "浅蓝色"
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "description": "UPF50+防晒指数，轻薄透气，连帽设计，可收纳至口袋，方便携带。适合户外防晒。",
+    "image_url": "https://images.unsplash.com/photo-1544923246-77307dd270aa?w=400&h=400&fit=crop",
+    "size_chart": {
+      "S": "胸围104cm 衣长64cm",
+      "M": "胸围110cm 衣长66cm",
+      "L": "胸围116cm 衣长68cm",
+      "XL": "胸围122cm 衣长70cm"
+    },
+    "care_instructions": "可机洗，冷水洗涤，不可漂白，不可烘干",
+    "tags": [
+      "防晒衣",
+      "夏季",
+      "户外",
+      "轻薄"
+    ],
+    "stock_status": "充足",
+    "sales_count": 2340
+  }
+]

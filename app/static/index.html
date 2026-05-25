@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>服装电商客服 - 智能助手</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  </head>
+  <body>
+    <main class="shell">
+      <header class="topbar">
+        <div class="brand">
+          <div class="brand-icon">👗</div>
+          <div>
+            <h1>服装电商客服</h1>
+            <p>智能助手</p>
+          </div>
+        </div>
+        <div class="agent-status" id="agentStatus">
+          <span class="status-dot"></span>
+          <span>客服在线 | 商品知识库已同步</span>
+          <a href="/admin" class="admin-link" target="_blank">管理后台</a>
+        </div>
+      </header>
+
+      <section class="workspace">
+        <aside class="sidebar">
+          <section class="panel capability-panel">
+            <h2>🛍️ 客服能力</h2>
+            <button class="nav-item active" data-prompt="查询纯棉T恤的面料、尺码建议和退换货政策">
+              <span>👕</span>
+              <span>商品售后咨询</span>
+            </button>
+            <button class="nav-item" data-prompt="查询最近订单量、热销款和售后处理情况">
+              <span>📦</span>
+              <span>订单售后查询</span>
+            </button>
+            <button class="nav-item" data-prompt="原价259元的牛仔裤打8折，再用满200减30券，最终多少钱？">
+              <span>🏷️</span>
+              <span>优惠到手价</span>
+            </button>
+            <button class="nav-item" data-prompt="帮我确认现在日期，以及今天下单大概什么时候发货">
+              <span>⏱️</span>
+              <span>发货时效咨询</span>
+            </button>
+          </section>
+
+          <section class="panel quick-panel">
+            <h2>⚡ 快捷提问</h2>
+            <button class="quick-item">你们店里最推荐的帽子是哪一款？</button>
+            <button class="quick-item">哪款靴子舒服又适合通勤？</button>
+            <button class="quick-item">适合女大学生夏天的清爽穿搭</button>
+            <button class="quick-item">男生日常干净利落穿搭推荐</button>
+          </section>
+
+          <section class="panel stats-panel">
+            <h2>📌 店铺资料</h2>
+            <dl>
+              <div>
+                <dt>商品知识片段</dt>
+                <dd>183 块</dd>
+              </div>
+              <div>
+                <dt>服务资料来源</dt>
+                <dd>47 个</dd>
+              </div>
+              <div>
+                <dt>客服能力</dt>
+                <dd id="toolsCount">加载中</dd>
+              </div>
+              <div>
+                <dt>智能客服模型</dt>
+                <dd id="modelName">加载中</dd>
+              </div>
+              <div>
+                <dt>本次 Token 消耗</dt>
+                <dd id="tokenUsage">-</dd>
+              </div>
+            </dl>
+          </section>
+        </aside>
+
+        <section class="chat-card">
+          <div class="chat-header">
+            <h2>💬 服装顾问对话</h2>
+            <div class="chat-actions">
+              <button id="clearBtn" type="button">清空对话</button>
+              <button id="exportBtn" type="button">导出记录</button>
+            </div>
+          </div>
+
+          <div class="messages" id="messages" aria-live="polite">
+            <article class="message bot-message">
+              <div class="avatar">🤖</div>
+              <div class="bubble">
+                <div class="meta">
+                  <strong>服装电商客服</strong>
+                  <span>刚刚</span>
+                </div>
+                <p>你好！我是<strong>服装电商客服</strong>，选款、尺码、搭配、优惠和订单售后都可以问我。</p>
+                <p>我可以帮你快速处理：</p>
+                <ul>
+                  <li><strong>👕 商品咨询：</strong>查询面料、版型、尺码、洗护和退换货政策</li>
+                  <li><strong>✨ 搭配推荐：</strong>按场景、季节、身高体型推荐服装组合</li>
+                  <li><strong>🏷️ 优惠试算：</strong>计算折扣、满减、优惠券后的到手价</li>
+                  <li><strong>📦 订单售后：</strong>查询订单、物流、售后进度和店铺经营数据</li>
+                </ul>
+                <p class="muted">直接描述你的需求，我会按服装客服的方式帮你查、算、推荐。</p>
+              </div>
+            </article>
+          </div>
+
+          <form class="composer" id="chatForm">
+            <input type="file" id="imageInput" accept="image/*" hidden />
+            <button type="button" id="uploadBtn" class="upload-btn" title="上传图片">📎</button>
+            <input
+              id="messageInput"
+              name="message"
+              autocomplete="off"
+              placeholder="输入你的问题，例如：身高165体重52，通勤想买一条显瘦牛仔裤，有推荐吗？"
+            />
+            <span class="send-hint">按 Enter 发送</span>
+            <button type="submit">发送 📩</button>
+          </form>
+          <div id="imagePreview" class="image-preview" style="display:none">
+            <img id="previewImg" src="" alt="预览" />
+            <button id="removeImg" type="button" class="remove-img">&times;</button>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <script src="/static/app.js"></script>
+  </body>
+</html>

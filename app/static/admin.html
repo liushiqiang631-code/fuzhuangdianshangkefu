@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>管理后台 - 服装电商客服</title>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body { font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; background: #f4f6f8; color: #222; }
+
+      .header { background: linear-gradient(135deg, #1976d2, #1565c0); color: #fff; padding: 16px 32px; display: flex; align-items: center; justify-content: space-between; }
+      .header h1 { font-size: 18px; font-weight: 600; }
+      .header a { color: rgba(255,255,255,0.8); text-decoration: none; font-size: 14px; }
+
+      .container { display: grid; grid-template-columns: 360px 1fr; gap: 20px; padding: 20px; max-width: 1400px; margin: 0 auto; height: calc(100vh - 60px); }
+
+      .left-panel { display: flex; flex-direction: column; gap: 16px; overflow-y: auto; }
+      .right-panel { background: #fff; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); padding: 24px; overflow-y: auto; }
+
+      .card { background: #fff; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); padding: 16px; }
+      .card h2 { font-size: 15px; color: #555; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #eee; }
+
+      .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+      .stat-item { background: #f8f9fa; border-radius: 8px; padding: 12px; text-align: center; }
+      .stat-item .num { font-size: 24px; font-weight: 700; color: #1976d2; }
+      .stat-item .label { font-size: 12px; color: #888; margin-top: 4px; }
+
+      .session-list { list-style: none; }
+      .session-item { padding: 12px; border-bottom: 1px solid #f0f0f0; cursor: pointer; transition: background 0.15s; border-radius: 8px; }
+      .session-item:hover { background: #f0f6ff; }
+      .session-item .sid { font-size: 13px; color: #1976d2; font-weight: 600; }
+      .session-item .preview { font-size: 13px; color: #666; margin-top: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .session-item .meta { font-size: 11px; color: #999; margin-top: 4px; }
+
+      .detail-empty { color: #999; text-align: center; padding: 60px 0; font-size: 15px; }
+
+      .chat-log { display: flex; flex-direction: column; gap: 12px; }
+      .chat-msg { padding: 10px 14px; border-radius: 10px; max-width: 80%; font-size: 14px; line-height: 1.6; }
+      .chat-msg.human { background: #e3f2fd; align-self: flex-end; color: #0d47a1; }
+      .chat-msg.ai { background: #f5f5f5; align-self: flex-start; color: #333; }
+      .chat-msg .role { font-size: 11px; color: #999; margin-bottom: 4px; }
+
+      @media (max-width: 768px) {
+        .container { grid-template-columns: 1fr; }
+      }
+
+      .tabs { display: flex; gap: 0; }
+      .tab { flex: 1; padding: 10px; border: none; background: #e8ecf0; cursor: pointer; font-size: 14px; font-weight: 600; color: #555; border-radius: 12px 12px 0 0; transition: all 0.2s; }
+      .tab.active { background: #fff; color: #1976d2; box-shadow: 0 -2px 8px rgba(0,0,0,0.06); }
+      .tab:hover:not(.active) { background: #dde3e8; }
+      .tab-content { display: flex; flex-direction: column; gap: 16px; flex: 1; overflow: hidden; }
+
+      .log-container { flex: 1; overflow-y: auto; background: #1e1e2e; border-radius: 8px; padding: 16px; font-family: "Cascadia Code", "Fira Code", Consolas, monospace; font-size: 12px; line-height: 1.6; color: #cdd6f4; max-height: calc(100vh - 200px); }
+      .log-line { white-space: pre-wrap; word-break: break-all; margin: 0; padding: 1px 0; }
+      .log-line .log-time { color: #89b4fa; }
+      .log-line .log-level-INFO { color: #a6e3a1; }
+      .log-line .log-level-WARNING { color: #f9e2af; }
+      .log-line .log-level-ERROR { color: #f38ba8; }
+      .log-line .log-level-DEBUG { color: #9399b2; }
+      .refresh-btn { float: right; font-size: 12px; padding: 2px 10px; border: 1px solid #ddd; border-radius: 6px; background: #fff; cursor: pointer; color: #555; }
+      .refresh-btn:hover { background: #f0f6ff; border-color: #1976d2; color: #1976d2; }
+    </style>
+  </head>
+  <body>
+    <div class="header">
+      <h1>管理后台</h1>
+      <div class="header-right">
+        <a href="/">← 返回客服页面</a>
+      </div>
+    </div>
+
+    <div class="container">
+      <div class="left-panel">
+        <div class="tabs">
+          <button class="tab active" data-tab="sessions">会话管理</button>
+          <button class="tab" data-tab="logs">系统日志</button>
+        </div>
+
+        <div class="tab-content" id="tab-sessions">
+          <div class="card">
+            <h2>反馈统计</h2>
+            <div class="stats-grid" id="feedbackStats">
+              <div class="stat-item"><div class="num">-</div><div class="label">总反馈</div></div>
+              <div class="stat-item"><div class="num">-</div><div class="label">好评率</div></div>
+              <div class="stat-item"><div class="num">-</div><div class="label">好评</div></div>
+              <div class="stat-item"><div class="num">-</div><div class="label">差评</div></div>
+            </div>
+          </div>
+
+          <div class="card" style="flex:1; overflow:hidden; display:flex; flex-direction:column;">
+            <h2>会话列表 (<span id="sessionCount">0</span>)</h2>
+            <ul class="session-list" id="sessionList" style="overflow-y:auto; flex:1;"></ul>
+          </div>
+        </div>
+
+        <div class="tab-content" id="tab-logs" style="display:none; flex:1; overflow:hidden;">
+          <div class="card" style="flex:1; overflow:hidden; display:flex; flex-direction:column;">
+            <h2>
+              系统日志
+              <button class="refresh-btn" id="refreshLogs" title="刷新日志">刷新</button>
+              <select id="logLines" style="float:right; font-size:12px; padding:2px 6px;">
+                <option value="100">100行</option>
+                <option value="200" selected>200行</option>
+                <option value="500">500行</option>
+                <option value="1000">1000行</option>
+              </select>
+            </h2>
+            <div class="log-container" id="logContainer">
+              <div class="detail-empty">加载中...</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="right-panel" id="detailPanel">
+        <div class="detail-empty">← 点击左侧会话查看详情</div>
+      </div>
+    </div>
+
+    <script src="/static/admin.js"></script>
+  </body>
+</html>
