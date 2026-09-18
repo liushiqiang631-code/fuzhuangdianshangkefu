@@ -1,10 +1,8 @@
 """
-LLM 重试包装器
-封装带指数退避的重试逻辑，处理 429/5xx/超时等瞬态错误
+重试模块
+LLM 调用重试配置 + 重试统计
 """
 import logging
-import time
-from typing import Any
 from config import settings
 
 logger = logging.getLogger("zhice-platform.retry")
@@ -38,26 +36,20 @@ class RetryStats:
 
     def __init__(self):
         self.total_calls = 0
-        self.total_retries = 0
         self.total_errors = 0
         self._last_error = None
 
     def record_call(self):
         self.total_calls += 1
 
-    def record_retry(self, attempt: int, error: Exception):
-        self.total_retries += 1
-        self._last_error = str(error)
-        logger.warning(f"[Retry] 第 {attempt} 次重试: {error}")
-
     def record_error(self, error: Exception):
         self.total_errors += 1
-        logger.error(f"[Retry] 重试耗尽，最终失败: {error}")
+        self._last_error = str(error)
+        logger.error(f"[Retry] 调用最终失败: {error}")
 
     def get_stats(self) -> dict:
         return {
             "total_calls": self.total_calls,
-            "total_retries": self.total_retries,
             "total_errors": self.total_errors,
             "last_error": self._last_error,
         }

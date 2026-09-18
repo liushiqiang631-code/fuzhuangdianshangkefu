@@ -4,6 +4,7 @@ API 路由模块
 """
 import uuid
 import json
+import re
 import time
 import logging
 from fastapi import APIRouter, HTTPException, Request, UploadFile, File
@@ -11,13 +12,22 @@ from fastapi.responses import FileResponse, StreamingResponse
 from pydantic import BaseModel, Field
 from typing import Optional, List, Dict
 from pathlib import Path
-from agent import session_manager, ChatSession, check_llm_health
+from agent import session_manager, check_llm_health, is_valid_session_id, SESSIONS_DIR
 from rag_chain import rag_query, get_rag_chain_with_sources
 from config import settings
 
 logger = logging.getLogger("zhice-platform")
 
 router = APIRouter()
+
+# 上传文件白名单：扩展名 -> (Content-Type, 文件头魔数)
+ALLOWED_IMAGE_TYPES = {
+    ".jpg": ("image/jpeg", [b"\xff\xd8\xff"]),
+    ".jpeg": ("image/jpeg", [b"\xff\xd8\xff"]),
+    ".png": ("image/png", [b"\x89PNG\r\n\x1a\n"]),
+    ".gif": ("image/gif", [b"GIF87a", b"GIF89a"]),
+    ".webp": ("image/webp", [b"RIFF"]),
+}
 
 
 # ========== 请求/响应模型 ==========
@@ -39,8 +49,7 @@ class ChatResponse(BaseModel):
 
 class IngestRequest(BaseModel):
     """数据导入请求"""
-    docs_dir: Optional[str] = Field(None, description="文档目录路径")
-    generate_sample: bool = Field(False, description="是否生成示例数据")
+    generate_sample: bool = Field(False, description="是否重新生成示例数据")
 
 
 class SystemStatus(BaseModel):
@@ -52,22 +61,36 @@ class SystemStatus(BaseModel):
     chroma_db_exists: bool
 
 
+def _require_session_id(session_id: Optional[str]) -> str:
+    """校验并返回会话 ID（不传则生成完整 UUID）"""
+    session_id = session_id or str(uuid.uuid4())
+    if not is_valid_session_id(session_id):
+        raise HTTPException(status_code=400, detail="会话ID格式不正确（仅允许字母、数字、下划线和短横线，最长64位）")
+    return session_id
+
+
 # ========== 路由定义 ==========
 
 @router.get("/", tags=["首页"])
-async def root():
+def root():
     """前端首页"""
     return FileResponse(Path(__file__).parent / "static" / "index.html")
 
 
 @router.get("/ui", tags=["首页"])
-async def ui():
+def ui():
     """前端页面入口"""
     return FileResponse(Path(__file__).parent / "static" / "index.html")
 
 
+@router.get("/knowledge", tags=["知识库管理"])
+def knowledge_page():
+    """知识库管理页面"""
+    return FileResponse(Path(__file__).parent / "static" / "knowledge.html")
+
+
 @router.get("/health", tags=["首页"])
-async def health():
+def health():
     """健康检查接口"""
     chroma_exists = Path(settings.CHROMA_PERSIST_DIR).exists()
     return SystemStatus(
@@ -80,22 +103,25 @@ async def health():
 
 
 @router.get("/health/llm", tags=["首页"])
-async def health_llm():
+def health_llm():
     """LLM 连通性检查（发送极简请求验证 API 可用性）"""
     return check_llm_health()
 
 
 @router.post("/chat", response_model=ChatResponse, tags=["对话"])
-async def chat(request: ChatRequest):
+def chat(request: ChatRequest):
     """
     智能客服对话接口（阻塞模式，返回完整回复）
 
     - **message**: 用户发送的消息
     - **session_id**: 可选，会话ID（用于多轮对话），不传则自动创建
     - **use_agent**: 是否使用 Agent 模式（支持工具调用），默认 True
+
+    注意：这里刻意用同步 def（而非 async def），FastAPI 会将其放入线程池执行，
+    避免 LLM 秒级阻塞调用卡死事件循环。
     """
     start_time = time.time()
-    session_id = request.session_id or str(uuid.uuid4())[:8]
+    session_id = _require_session_id(request.session_id)
 
     try:
         if request.use_agent:
@@ -118,6 +144,8 @@ async def chat(request: ChatRequest):
                 session_id=session_id,
             )
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"[Chat] session={session_id} error: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail="服务暂时不可用，请稍后重试")
@@ -135,7 +163,7 @@ async def chat_stream(request: ChatRequest):
     - done: 完成（包含完整回复和工具列表）
     - error: 错误
     """
-    session_id = request.session_id or str(uuid.uuid4())[:8]
+    session_id = _require_session_id(request.session_id)
     session = session_manager.get_session(session_id)
 
     async def event_generator():
@@ -156,7 +184,7 @@ async def chat_stream(request: ChatRequest):
 
 
 @router.post("/chat/rag-with-sources", tags=["对话"])
-async def chat_rag_with_sources(request: ChatRequest):
+def chat_rag_with_sources(request: ChatRequest):
     """
     RAG 问答（带来源引用）
     返回回答和检索到的知识库来源
@@ -167,7 +195,7 @@ async def chat_rag_with_sources(request: ChatRequest):
         return {
             "answer": result["answer"],
             "sources": result["sources"],
-            "session_id": request.session_id or str(uuid.uuid4())[:8],
+            "session_id": request.session_id or str(uuid.uuid4()),
         }
     except Exception as e:
         logger.error(f"[RAG Sources] error: {e}", exc_info=True)
@@ -175,29 +203,32 @@ async def chat_rag_with_sources(request: ChatRequest):
 
 
 @router.delete("/chat/{session_id}", tags=["对话"])
-async def clear_session(session_id: str):
+def clear_session(session_id: str):
     """清空指定会话的聊天历史"""
-    session = session_manager.get_session(session_id)
+    if not is_valid_session_id(session_id):
+        raise HTTPException(status_code=400, detail="会话ID格式不正确")
+    if session_id not in session_manager.sessions:
+        return {"message": f"会话 {session_id} 不存在", "session_id": session_id}
+    session = session_manager.sessions[session_id]
     if not session.chat_history:
-        return {"message": f"会话 {session_id} 不存在或已为空", "session_id": session_id}
+        return {"message": f"会话 {session_id} 已为空", "session_id": session_id}
     session.clear_history()
     return {"message": f"会话 {session_id} 已清空", "session_id": session_id}
 
 
 @router.get("/sessions", tags=["会话"])
-async def list_sessions():
+def list_sessions():
     """列出所有活跃会话"""
     sessions = session_manager.list_sessions()
     return {"sessions": sessions, "count": len(sessions)}
 
 
 @router.post("/ingest", tags=["数据管理"])
-async def ingest_data(request: IngestRequest):
+def ingest_data(request: IngestRequest):
     """
-    导入知识库数据
+    导入知识库数据（固定从 data/docs/ 读取，导入前清空旧索引避免重复入库）
 
-    - **generate_sample**: 生成示例数据（商品信息、FAQ、退换货政策等）
-    - **docs_dir**: 自定义文档目录路径
+    - **generate_sample**: 重新生成示例数据
     """
     try:
         from ingest import ingest_pipeline, generate_sample_data
@@ -205,7 +236,7 @@ async def ingest_data(request: IngestRequest):
         if request.generate_sample:
             generate_sample_data()
 
-        vectorstore = ingest_pipeline(request.docs_dir)
+        vectorstore = ingest_pipeline()
         if vectorstore is None:
             return {"message": "没有找到文档，请先上传文档到 data/docs/ 目录", "status": "warning"}
 
@@ -216,7 +247,7 @@ async def ingest_data(request: IngestRequest):
 
 
 @router.get("/tools", tags=["工具"])
-async def list_tools():
+def list_tools():
     """列出所有可用的 Agent 工具"""
     from agent import AGENT_TOOLS
     tools_info = []
@@ -238,7 +269,7 @@ class MemoryRequest(BaseModel):
 
 
 @router.get("/memory", tags=["记忆"])
-async def list_memory():
+def list_memory():
     """列出所有跨会话记忆"""
     from memory import list_memories
     memories = list_memories()
@@ -246,7 +277,7 @@ async def list_memory():
 
 
 @router.post("/memory", tags=["记忆"])
-async def add_memory(request: MemoryRequest):
+def add_memory(request: MemoryRequest):
     """添加一条跨会话记忆"""
     from memory import save_memory
     success = save_memory(request.name, request.content, request.type)
@@ -256,7 +287,7 @@ async def add_memory(request: MemoryRequest):
 
 
 @router.delete("/memory/{name}", tags=["记忆"])
-async def delete_memory(name: str):
+def delete_memory(name: str):
     """删除一条跨会话记忆"""
     from memory import delete_memory as del_mem
     success = del_mem(name)
@@ -276,7 +307,7 @@ class FeedbackRequest(BaseModel):
 
 
 @router.post("/feedback", tags=["反馈"])
-async def submit_feedback(request: FeedbackRequest):
+def submit_feedback(request: FeedbackRequest):
     """提交对话反馈"""
     from feedback import save_feedback
     success = save_feedback(request.session_id, request.message_index, request.rating, request.comment)
@@ -294,7 +325,7 @@ class EscalateRequest(BaseModel):
 
 
 @router.post("/escalate", tags=["客服"])
-async def submit_escalation(request: EscalateRequest):
+def submit_escalation(request: EscalateRequest):
     """记录转人工请求"""
     try:
         data_dir = Path("./data")
@@ -315,48 +346,63 @@ async def submit_escalation(request: EscalateRequest):
 # ========== 图片上传 API ==========
 
 UPLOAD_DIR = Path("./data/uploads")
+MAX_UPLOAD_SIZE = 5 * 1024 * 1024  # 5MB
 
 
 @router.post("/upload", tags=["上传"])
 async def upload_image(file: UploadFile = File(...)):
-    """上传图片文件"""
-    if not file.content_type or not file.content_type.startswith("image/"):
-        raise HTTPException(status_code=400, detail="只支持图片文件")
+    """上传图片文件（校验扩展名、文件头魔数与大小，拒绝 SVG 等可执行内容）"""
+    raw_name = file.filename or ""
+    ext = Path(raw_name).suffix.lower()
+    if ext not in ALLOWED_IMAGE_TYPES:
+        raise HTTPException(status_code=400, detail="只支持 jpg/png/gif/webp 图片文件")
+
+    content_type, magic_headers = ALLOWED_IMAGE_TYPES[ext]
+
+    # 分块读取并限制大小，避免超大包占满内存
+    chunks = []
+    total = 0
+    while True:
+        chunk = await file.read(64 * 1024)
+        if not chunk:
+            break
+        total += len(chunk)
+        if total > MAX_UPLOAD_SIZE:
+            raise HTTPException(status_code=400, detail="文件大小不能超过 5MB")
+        chunks.append(chunk)
+    content = b"".join(chunks)
+
+    # 文件头魔数校验（防止伪造扩展名上传 SVG/HTML 等内容）
+    if not any(content.startswith(h) for h in magic_headers):
+        raise HTTPException(status_code=400, detail="文件内容不是有效的图片")
 
     UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
-    raw_ext = file.filename.split(".")[-1] if "." in (file.filename or "") else "jpg"
-    ext = "".join(c for c in raw_ext if c.isalnum()).lower() or "jpg"
-    filename = f"{uuid.uuid4().hex[:12]}.{ext}"
+    filename = f"{uuid.uuid4().hex[:12]}{ext}"
     filepath = UPLOAD_DIR / filename
-
-    content = await file.read()
-    if len(content) > 5 * 1024 * 1024:
-        raise HTTPException(status_code=400, detail="文件大小不能超过 5MB")
-
     filepath.write_bytes(content)
     return {"url": f"/uploads/{filename}", "filename": filename}
 
 
 @router.get("/uploads/{filename}", tags=["上传"])
-async def get_upload(filename: str):
-    """获取已上传的文件"""
-    filepath = UPLOAD_DIR / filename
-    if not filepath.exists():
+def get_upload(filename: str):
+    """获取已上传的文件（校验路径不越界）"""
+    upload_root = UPLOAD_DIR.resolve()
+    filepath = (UPLOAD_DIR / filename).resolve()
+    if not filepath.is_relative_to(upload_root) or not filepath.is_file():
         raise HTTPException(status_code=404, detail="文件不存在")
-    from fastapi.responses import FileResponse
     return FileResponse(filepath)
 
 
 # ========== 管理后台 API ==========
 
 @router.get("/admin", tags=["管理后台"])
-async def admin_page():
+def admin_page():
     """管理后台页面"""
     return FileResponse(Path(__file__).parent / "static" / "admin.html")
 
 
 @router.get("/admin/sessions", tags=["管理后台"])
-async def admin_sessions():
+def admin_sessions():
     """获取所有会话列表（含摘要信息）"""
     sessions_dir = Path(settings.DATA_SESSIONS_DIR)
     if not sessions_dir.exists():
@@ -388,8 +434,10 @@ async def admin_sessions():
 
 
 @router.get("/admin/sessions/{session_id}", tags=["管理后台"])
-async def admin_session_detail(session_id: str):
+def admin_session_detail(session_id: str):
     """获取单个会话详情"""
+    if not is_valid_session_id(session_id):
+        raise HTTPException(status_code=400, detail="会话ID格式不正确")
     filepath = Path(settings.DATA_SESSIONS_DIR) / f"{session_id}.json"
     if not filepath.exists():
         raise HTTPException(status_code=404, detail="会话不存在")
@@ -398,7 +446,7 @@ async def admin_session_detail(session_id: str):
 
 
 @router.get("/admin/feedback", tags=["管理后台"])
-async def admin_feedback():
+def admin_feedback():
     """获取反馈统计"""
     from feedback import load_feedback_stats, load_recent_feedback
     stats = load_feedback_stats()
@@ -407,14 +455,13 @@ async def admin_feedback():
 
 
 @router.get("/admin/logs", tags=["管理后台"])
-async def admin_logs(lines: int = 200):
+def admin_logs(lines: int = 200):
     """获取最近 N 行日志"""
     log_path = Path(settings.LOG_FILE)
     if not log_path.exists():
         return {"logs": [], "total": 0}
 
     try:
-        # 读取最后 N 行（高效，不加载整个文件）
         with open(log_path, "r", encoding="utf-8") as f:
             all_lines = f.readlines()
         tail = all_lines[-min(lines, 1000):]
@@ -422,3 +469,165 @@ async def admin_logs(lines: int = 200):
     except Exception as e:
         logger.error(f"[Admin] 读取日志失败: {e}")
         return {"logs": [], "total": 0, "error": str(e)}
+
+
+# ========== 对话搜索 API ==========
+
+@router.get("/search", tags=["搜索"])
+def search_conversations_api(query: str, limit: int = 20):
+    """搜索历史对话"""
+    from conversation_search import search_conversations
+    results = search_conversations(query, limit)
+    return {"results": results, "count": len(results)}
+
+
+@router.get("/sessions/recent", tags=["会话"])
+def get_recent_conversations(limit: int = 10):
+    """获取最近的对话"""
+    from conversation_search import conversation_searcher
+    sessions = conversation_searcher.get_recent_conversations(limit)
+    return {"sessions": sessions}
+
+
+# ========== 对话分支 API ==========
+
+@router.post("/branches", tags=["分支"])
+def create_branch_api(
+    session_id: str,
+    fork_point: int,
+    name: str = "",
+):
+    """创建对话分支"""
+    from conversation_branch import branch_manager
+
+    if not is_valid_session_id(session_id):
+        raise HTTPException(status_code=400, detail="会话ID格式不正确")
+    if fork_point < 0:
+        raise HTTPException(status_code=400, detail="fork_point 不能为负数")
+    if session_id not in session_manager.sessions:
+        raise HTTPException(status_code=404, detail="会话不存在")
+
+    # 转换消息格式
+    messages = []
+    for msg in session_manager.sessions[session_id].chat_history:
+        if hasattr(msg, "content"):
+            messages.append({
+                "role": "human" if hasattr(msg, "type") and msg.type == "human" else "ai",
+                "content": msg.content,
+            })
+
+    if fork_point >= len(messages):
+        raise HTTPException(status_code=400, detail=f"fork_point 超出范围（当前会话共 {len(messages)} 条消息）")
+
+    branch = branch_manager.create_branch(
+        session_id=session_id,
+        messages=messages,
+        fork_point=fork_point,
+        name=name,
+    )
+
+    return {
+        "branch_id": branch.branch_id,
+        "name": branch.name,
+        "fork_point": branch.fork_point,
+        "message_count": len(branch.messages),
+    }
+
+
+@router.get("/branches/{session_id}", tags=["分支"])
+def get_session_branches(session_id: str):
+    """获取会话的所有分支"""
+    from conversation_branch import branch_manager
+    if not is_valid_session_id(session_id):
+        raise HTTPException(status_code=400, detail="会话ID格式不正确")
+    branches = branch_manager.get_session_branches(session_id)
+    return {"branches": branches, "count": len(branches)}
+
+
+@router.post("/branches/{branch_id}/switch", tags=["分支"])
+def switch_to_branch(branch_id: str):
+    """切换到指定分支（将会话历史回退到分支的 fork_point）"""
+    from conversation_branch import branch_manager
+    from agent import ChatSession, _deserialize_history
+
+    branch = branch_manager.get_branch(branch_id)
+    if not branch:
+        raise HTTPException(status_code=404, detail="分支不存在")
+
+    session = session_manager.get_session(branch.session_id)
+
+    # 真正切换：用分支在 fork_point 处的消息覆盖会话历史
+    cutoff = branch.fork_point + 1
+    messages = branch.messages[:cutoff]
+    history = _deserialize_history([
+        {"role": m.get("role", "human"), "content": m.get("content", "")}
+        for m in messages
+    ])
+    session.chat_history = history
+    session._save()
+
+    return {
+        "branch_id": branch.branch_id,
+        "session_id": branch.session_id,
+        "fork_point": branch.fork_point,
+        "message_count": len(session.chat_history),
+        "messages": messages,
+    }
+
+
+# ========== 会话导出/导入 API ==========
+
+@router.get("/sessions/{session_id}/export", tags=["会话"])
+def export_session(session_id: str):
+    """导出会话（直接读磁盘，包含运行中新建的会话）"""
+    if not is_valid_session_id(session_id):
+        raise HTTPException(status_code=400, detail="会话ID格式不正确")
+    # 先落盘内存中可能的未保存变更
+    if session_id in session_manager.sessions:
+        session_manager.sessions[session_id]._save()
+    filepath = SESSIONS_DIR / f"{session_id}.json"
+    if not filepath.exists():
+        raise HTTPException(status_code=404, detail="会话不存在")
+    return json.loads(filepath.read_text(encoding="utf-8"))
+
+
+@router.post("/sessions/import", tags=["会话"])
+def import_session(data: Dict):
+    """导入会话（兼容 chat_history 与 messages 两种键名）"""
+    session_id = data.get("session_id") or str(uuid.uuid4())
+    if not is_valid_session_id(session_id):
+        raise HTTPException(status_code=400, detail="会话ID格式不正确")
+
+    history = data.get("chat_history")
+    if history is None:
+        history = data.get("messages", [])
+    if not isinstance(history, list):
+        raise HTTPException(status_code=400, detail="消息格式不正确，需要 chat_history 数组")
+
+    SESSIONS_DIR.mkdir(parents=True, exist_ok=True)
+    file_data = {
+        "session_id": session_id,
+        "chat_history": history,
+        "created_at": data.get("created_at", time.time()),
+        "last_active": time.time(),
+    }
+    filepath = SESSIONS_DIR / f"{session_id}.json"
+    filepath.write_text(json.dumps(file_data, ensure_ascii=False, indent=2), encoding="utf-8")
+
+    # 加载进内存，让后续对话能接上导入的历史
+    from agent import ChatSession
+    session = ChatSession._from_file(filepath)
+    if session:
+        session_manager.sessions[session_id] = session
+
+    return {"session_id": session_id, "message": "导入成功"}
+
+
+# ========== 快捷回复 API ==========
+
+@router.get("/quick-replies", tags=["交互"])
+def get_quick_replies_api(category: str = "general"):
+    """获取快捷回复"""
+    from tools.recommendation import get_quick_replies
+    replies = get_quick_replies(category)
+    return {"replies": replies}

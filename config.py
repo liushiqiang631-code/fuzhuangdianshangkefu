@@ -15,7 +15,6 @@ class Settings(BaseSettings):
     """系统全局配置"""
 
     # ========== LLM 配置 ==========
-    LLM_PROVIDER: str = "deepseek"  # deepseek / openai
     OPENAI_API_KEY: str = ""
     OPENAI_API_BASE: str = "https://api.deepseek.com"
     DEEPSEEK_API_KEY: str = ""
@@ -23,7 +22,6 @@ class Settings(BaseSettings):
     LLM_TEMPERATURE: float = 0.1
     LLM_MAX_TOKENS: int = 2048
     LLM_MAX_RETRIES: int = 3  # LLM 调用最大重试次数
-    LLM_RETRY_BASE_DELAY: float = 1.0  # 重试基础延迟（秒）
 
     # ---- 多模型 Fallback ----
     LLM_FALLBACK_ENABLED: bool = False  # 是否启用备用模型
@@ -35,7 +33,7 @@ class Settings(BaseSettings):
     # ========== Embedding 配置 ==========
     EMBEDDING_PROVIDER: str = "huggingface"  # openai / huggingface
     EMBEDDING_MODEL: str = "BAAI/bge-small-zh-v1.5"  # 中文小模型，本地运行
-    EMBEDDING_API_BASE: str = ""
+    EMBEDDING_API_BASE: str = ""  # OpenAI 兼容 Embedding 地址（为空时用 OPENAI_API_BASE）
 
     # ========== ChromaDB 配置 ==========
     CHROMA_PERSIST_DIR: str = "./data/chroma_db"
@@ -48,13 +46,9 @@ class Settings(BaseSettings):
     RAG_SCORE_THRESHOLD: float = 0.3
 
     # ========== Agent 配置 ==========
-    AGENT_MAX_ITERATIONS: int = 10
-    AGENT_VERBOSE: bool = True
     MAX_TOOL_RESULT_CHARS: int = 4000  # 工具结果最大字符数，超出则截断
-    COMPACT_KEEP_RECENT_TOOL_MESSAGES: int = 6  # MicroCompact 保留最近 N 条工具结果
     SUMMARY_THRESHOLD: int = 30    # 触发摘要的消息数
     SUMMARY_KEEP_RECENT: int = 10  # 摘要后保留最近 N 条消息
-    SUMMARY_MAX_TOKENS: int = 300  # 摘要最大 token
 
     # ---- 提示词分段（模块化） ----
     PROMPT_ROLE: str = """你是一个专业的服装电商智能客服助手，名字叫"小智"。
@@ -69,22 +63,8 @@ class Settings(BaseSettings):
 7. 用户信息查询与会员服务
 8. 价格计算、折扣、满减等计算"""
 
-    PROMPT_TOOLS: str = """你可以使用以下工具：
-- knowledge_search: 搜索商品信息、尺码、材质、搭配建议、退换货政策。当用户问商品相关问题时优先使用。
-- get_product_info: 根据商品名称查询详细信息（价格、材质、颜色、尺码）。
-- search_products: 结构化商品搜索，支持按分类、价格区间、颜色、尺码过滤。当用户提出明确筛选条件时使用。
-- list_categories: 列出所有商品分类，当用户想知道有哪些品类时使用。
-- query_order: 根据订单号查询订单状态和物流信息。
-- query_user_orders: 根据用户ID查询所有订单。
-- query_active_users: 查询业务数据（活跃用户、热销商品等）。
-- calculate_price: 计算折后价格（支持折扣、优惠券、数量）。
-- calculate_full_reduction: 计算满减优惠。
-- calculate_member_discount: 计算会员折扣。
-- activate_user: 激活新用户（敏感操作，需先告知用户）。
-- get_user_info: 查询用户信息（会员等级、积分、消费记录）。
-- recommend_for_user: 根据用户偏好推荐商品。
-
-工具使用原则：
+    PROMPT_TOOLS: str = """工具使用原则：
+- 完整工具清单见下方动态上下文，以清单为准
 - 涉及具体订单、用户数据时，必须用工具查询，不要编造
 - 知识库能回答的问题优先用 knowledge_search
 - 当用户按条件筛选商品（如价格、颜色、尺码）时，优先用 search_products
@@ -114,8 +94,8 @@ class Settings(BaseSettings):
     APP_HOST: str = "0.0.0.0"
     APP_PORT: int = 8000
     APP_TITLE: str = "服装电商智能客服 API"
-    APP_VERSION: str = "1.0.0"
-    APP_DEBUG: bool = True
+    APP_VERSION: str = "1.1.0"
+    APP_DEBUG: bool = False  # 仅开发调试时开启（会启用 uvicorn 热重载）
 
     # ========== 认证配置 ==========
     AUTH_ENABLED: bool = False

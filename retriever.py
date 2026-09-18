@@ -2,11 +2,15 @@
 检索模块
 封装 ChromaDB 向量检索器，提供统一的检索接口
 """
+import logging
+import threading
 from typing import List, Optional, Tuple
 from langchain_community.vectorstores import Chroma
 from langchain_openai import OpenAIEmbeddings
 from langchain_core.documents import Document
 from config import settings
+
+logger = logging.getLogger("zhice-platform.retriever")
 
 
 class ClothingRetriever:
@@ -24,7 +28,7 @@ class ClothingRetriever:
             self.embeddings = OpenAIEmbeddings(
                 model=settings.EMBEDDING_MODEL,
                 openai_api_key=settings.OPENAI_API_KEY,
-                openai_api_base=settings.OPENAI_API_BASE,
+                openai_api_base=settings.EMBEDDING_API_BASE or settings.OPENAI_API_BASE,
             )
         self.persist_dir = persist_dir or settings.CHROMA_PERSIST_DIR
         self.vectorstore = Chroma(
@@ -64,13 +68,16 @@ class ClothingRetriever:
         return self.retriever
 
 
-# 全局检索器实例（延迟初始化）
+# 全局检索器实例（延迟初始化，加锁防止并发重复构建）
 _retriever_instance: Optional[ClothingRetriever] = None
+_retriever_lock = threading.Lock()
 
 
 def get_retriever() -> ClothingRetriever:
     """获取全局检索器实例"""
     global _retriever_instance
     if _retriever_instance is None:
-        _retriever_instance = ClothingRetriever()
+        with _retriever_lock:
+            if _retriever_instance is None:
+                _retriever_instance = ClothingRetriever()
     return _retriever_instance

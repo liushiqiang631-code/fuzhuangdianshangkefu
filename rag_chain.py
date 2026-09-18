@@ -1,13 +1,24 @@
 """
 RAG 问答链模块 (LCEL)
 基于 LangChain LCEL 构建 RAG 检索问答链
+LLM 实例统一来自 llm_factory（与 Agent 主链共用 fallback / 重试配置）
 """
-from langchain_openai import ChatOpenAI
+import logging
+from typing import Dict, List, Optional
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough, RunnableLambda
 from config import settings
 from retriever import get_retriever
+from llm_factory import get_fallback_llm
+from retry import get_llm_with_retry
+
+logger = logging.getLogger("zhice-platform.rag_chain")
+
+
+def _current_llm():
+    """获取当前（含 fallback 状态）的 LLM 实例"""
+    return get_llm_with_retry(get_fallback_llm().get_llm())
 
 
 def format_docs(docs) -> str:
@@ -27,15 +38,6 @@ def build_rag_chain():
 
     流程: 用户问题 -> 检索相关文档 -> 拼接上下文 -> LLM 生成回答
     """
-    # LLM 实例
-    llm = ChatOpenAI(
-        model=settings.LLM_MODEL,
-        temperature=settings.LLM_TEMPERATURE,
-        max_tokens=settings.LLM_MAX_TOKENS,
-        openai_api_key=settings.OPENAI_API_KEY,
-        openai_api_base=settings.OPENAI_API_BASE,
-    )
-
     # RAG 提示模板
     rag_prompt = ChatPromptTemplate.from_messages([
         ("system", """你是服装电商智能客服。根据以下检索到的知识库内容回答用户问题。
@@ -67,7 +69,7 @@ def build_rag_chain():
             "chat_history": RunnableLambda(lambda x: x.get("chat_history", []) if isinstance(x, dict) else []),
         }
         | rag_prompt
-        | llm
+        | _current_llm()
         | StrOutputParser()
     )
 
@@ -85,14 +87,6 @@ def build_rag_chain_with_sources():
     构建带来源引用的 RAG 链
     返回: (answer, sources)
     """
-    llm = ChatOpenAI(
-        model=settings.LLM_MODEL,
-        temperature=settings.LLM_TEMPERATURE,
-        max_tokens=settings.LLM_MAX_TOKENS,
-        openai_api_key=settings.OPENAI_API_KEY,
-        openai_api_base=settings.OPENAI_API_BASE,
-    )
-
     rag_prompt = ChatPromptTemplate.from_messages([
         ("system", """你是服装电商智能客服。根据以下检索到的知识库内容回答用户问题。
 
@@ -122,7 +116,7 @@ def build_rag_chain_with_sources():
 
     def rag_with_sources(query: str):
         retrieved = retrieve_and_format(query)
-        chain = rag_prompt | llm | StrOutputParser()
+        chain = rag_prompt | _current_llm() | StrOutputParser()
         answer = chain.invoke({
             "context": retrieved["context"],
             "question": query,

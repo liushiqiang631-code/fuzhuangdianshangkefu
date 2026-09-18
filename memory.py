@@ -15,6 +15,7 @@
   - reference: 外部资源指针
 """
 import logging
+import threading
 from pathlib import Path
 from typing import List, Dict, Optional
 from datetime import datetime
@@ -24,6 +25,8 @@ logger = logging.getLogger("zhice-platform.memory")
 
 MEMORY_DIR = Path(settings.DATA_MEMORY_DIR)
 INDEX_FILE = MEMORY_DIR / "MEMORY.md"
+
+_index_lock = threading.Lock()
 
 
 def _ensure_dir():
@@ -117,10 +120,13 @@ created: {datetime.now().isoformat()}
 
 def delete_memory(name: str) -> bool:
     """删除一条记忆"""
-    filepath = MEMORY_DIR / f"{name}.md"
+    safe_name = "".join(c for c in name if c.isalnum() or c in "-_").strip()
+    if not safe_name:
+        return False
+    filepath = MEMORY_DIR / f"{safe_name}.md"
     if filepath.exists():
         filepath.unlink()
-        _remove_from_index(name)
+        _remove_from_index(safe_name)
         return True
     return False
 
@@ -153,22 +159,24 @@ def list_memories() -> List[Dict[str, str]]:
 
 def _update_index(name: str, summary: str):
     """更新 MEMORY.md 索引"""
-    _ensure_dir()
-    index_content = INDEX_FILE.read_text(encoding="utf-8")
+    with _index_lock:
+        _ensure_dir()
+        index_content = INDEX_FILE.read_text(encoding="utf-8")
 
-    # 检查是否已有此条目
-    if f"[{name}]({name}.md)" in index_content:
-        return
+        # 检查是否已有此条目
+        if f"[{name}]({name}.md)" in index_content:
+            return
 
-    # 追加新条目
-    line = f"- [{name}]({name}.md) — {summary}\n"
-    INDEX_FILE.write_text(index_content + line, encoding="utf-8")
+        # 追加新条目
+        line = f"- [{name}]({name}.md) — {summary}\n"
+        INDEX_FILE.write_text(index_content + line, encoding="utf-8")
 
 
 def _remove_from_index(name: str):
     """从索引中移除条目"""
-    if not INDEX_FILE.exists():
-        return
-    lines = INDEX_FILE.read_text(encoding="utf-8").split("\n")
-    filtered = [l for l in lines if f"[{name}]({name}.md)" not in l]
-    INDEX_FILE.write_text("\n".join(filtered), encoding="utf-8")
+    with _index_lock:
+        if not INDEX_FILE.exists():
+            return
+        lines = INDEX_FILE.read_text(encoding="utf-8").split("\n")
+        filtered = [l for l in lines if f"[{name}]({name}.md)" not in l]
+        INDEX_FILE.write_text("\n".join(filtered), encoding="utf-8")

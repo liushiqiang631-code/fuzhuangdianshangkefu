@@ -68,11 +68,11 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# CORS 中间件
+# CORS 中间件（通配源时不允许携带凭证，符合 CORS 规范）
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_credentials=True,
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -89,6 +89,18 @@ app.mount("/static", StaticFiles(directory=Path(__file__).parent / "static"), na
 
 # 注册路由
 app.include_router(router)
+
+# 注册知识库管理路由
+from app.knowledge_routes import router as knowledge_router
+app.include_router(knowledge_router)
+
+# 注册管理分析路由
+from app.admin_routes import router as admin_analytics_router
+app.include_router(admin_analytics_router)
+
+# 注册客服工作台路由
+from app.workbench_routes import router as workbench_router
+app.include_router(workbench_router)
 
 
 # ========== 启动入口 ==========

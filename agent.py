@@ -2,9 +2,8 @@
 Agent 模块
 构建 Agent 并管理会话（增强推理能力）
 使用 LangChain 1.2+ 的 create_agent API
-
-P1 改进：提示词模块化 + 重试机制 + MicroCompact + token 追踪 + 记忆注入
 """
+import re
 import uuid
 import json
 import time
@@ -24,11 +23,26 @@ from tools.analytics import query_order, query_user_orders, query_active_users
 from tools.calculator import calculate_price, calculate_full_reduction, calculate_member_discount
 from tools.user_activation import activate_user, get_user_info, recommend_for_user
 from tools.product_search import search_products, list_categories
+from tools.cart import add_to_cart, view_cart, remove_from_cart, create_order
+from tools.user_profile import update_user_profile, get_user_profile, update_order_history
+from tools.promotions import query_active_promotions, query_user_coupons, validate_coupon, apply_coupon
+from tools.escalation import create_support_ticket, get_queue_status, get_ticket_status, add_ticket_note, resolve_ticket, get_escalation_stats
+from tools.product_detail import get_product_detail, check_stock
+from tools.logistics import track_logistics, query_order_logistics, get_delivery_estimate
+from tools.recommendation import get_dynamic_recommendations
 
 logger = logging.getLogger("zhice-platform.agent")
 
 # ========== 会话持久化目录 ==========
 SESSIONS_DIR = Path(settings.DATA_SESSIONS_DIR)
+
+# 合法会话 ID（防止路径穿越）
+SESSION_ID_RE = re.compile(r"^[A-Za-z0-9_-]{1,64}$")
+
+
+def is_valid_session_id(session_id: str) -> bool:
+    """检查会话 ID 是否可安全用作文件名"""
+    return bool(session_id) and bool(SESSION_ID_RE.fullmatch(session_id))
 
 
 # ========== 系统提示词组装 ==========
@@ -50,6 +64,11 @@ def build_system_prompt(memory_context: str = "") -> str:
     dynamic = []
     dynamic.append(f"\n当前时间：{datetime.now().strftime('%Y-%m-%d %H:%M')}")
 
+    # 动态生成完整的工具清单（与实际注册的工具保持一致）
+    tool_lines = [f"- {t['name']}: {t['description'][:80]}" for t in list_tools()]
+    if tool_lines:
+        dynamic.append("\n当前可用的完整工具清单：\n" + "\n".join(tool_lines))
+
     if memory_context:
         dynamic.append(f"\n{memory_context}")
 
@@ -58,53 +77,6 @@ def build_system_prompt(memory_context: str = "") -> str:
         parts.extend(dynamic)
 
     return "\n".join(parts)
-
-
-# ========== 工具结果裁剪 ==========
-def trim_tool_result(text: str, max_chars: int = None) -> str:
-    """裁剪过大的工具结果，防止撑爆上下文"""
-    limit = max_chars or settings.MAX_TOOL_RESULT_CHARS
-    if len(text) <= limit:
-        return text
-    return text[:limit] + f"\n\n[结果已截断，原始长度 {len(text)} 字符]"
-
-
-# ========== MicroCompact 上下文压缩 ==========
-def compact_history(history: List, keep_recent: int = None) -> List:
-    """
-    MicroCompact：清理旧的工具结果，保留最近 N 条完整
-
-    策略：
-    - HumanMessage / AIMessage 保留不变
-    - 最近 keep_recent 条 ToolMessage 保留完整
-    - 更早的 ToolMessage 替换为占位符
-    """
-    if not history:
-        return history
-
-    n = keep_recent or settings.COMPACT_KEEP_RECENT_TOOL_MESSAGES
-
-    # 找出所有 ToolMessage 的位置
-    tool_indices = [i for i, msg in enumerate(history) if isinstance(msg, ToolMessage)]
-
-    if len(tool_indices) <= n:
-        return history  # 不需要压缩
-
-    # 需要压缩的 ToolMessage 索引（保留最后 n 条）
-    to_compact = tool_indices[:-n]
-
-    # 创建压缩后的副本
-    compacted = list(history)
-    for idx in to_compact:
-        original_len = len(compacted[idx].content) if compacted[idx].content else 0
-        compacted[idx] = ToolMessage(
-            content="[历史工具结果已清理]",
-            tool_call_id=compacted[idx].tool_call_id,
-        )
-        logger.debug(f"[Compact] 清理 ToolMessage[{idx}], 原始长度 {original_len}")
-
-    logger.info(f"[Compact] MicroCompact 完成: 清理了 {len(to_compact)} 条旧工具结果")
-    return compacted
 
 
 # ========== 对话摘要压缩 ==========
@@ -156,7 +128,7 @@ def _summarize_history(history: List) -> List:
         return history
 
 
-# ========== Agent 工具列表 ==========
+# ========== Agent 工具列表（支持动态注册） ==========
 AGENT_TOOLS = [
     knowledge_search,
     get_product_info,
@@ -171,7 +143,106 @@ AGENT_TOOLS = [
     activate_user,
     get_user_info,
     recommend_for_user,
+    add_to_cart,
+    view_cart,
+    remove_from_cart,
+    create_order,
+    update_user_profile,
+    get_user_profile,
+    update_order_history,
+    query_active_promotions,
+    query_user_coupons,
+    validate_coupon,
+    apply_coupon,
+    create_support_ticket,
+    get_queue_status,
+    get_ticket_status,
+    add_ticket_note,
+    resolve_ticket,
+    get_escalation_stats,
+    get_product_detail,
+    check_stock,
+    track_logistics,
+    query_order_logistics,
+    get_delivery_estimate,
+    get_dynamic_recommendations,
 ]
+
+
+def register_tool(tool_func) -> bool:
+    """
+    动态注册工具到 Agent
+
+    Args:
+        tool_func: LangChain @tool 装饰的函数
+
+    Returns:
+        是否注册成功
+    """
+    tool_name = getattr(tool_func, "name", None) or getattr(
+        tool_func, "__name__", str(tool_func)
+    )
+
+    # 检查是否已注册
+    for existing in AGENT_TOOLS:
+        existing_name = getattr(existing, "name", None) or getattr(
+            existing, "__name__", str(existing)
+        )
+        if existing_name == tool_name:
+            logger.warning(f"[Agent] 工具 {tool_name} 已注册，跳过")
+            return False
+
+    AGENT_TOOLS.append(tool_func)
+    logger.info(f"[Agent] 动态注册工具: {tool_name} (总计 {len(AGENT_TOOLS)} 个)")
+
+    # 强制重建 Agent 以使用新工具
+    global _agent
+    _agent = None
+
+    return True
+
+
+def unregister_tool(tool_name: str) -> bool:
+    """
+    动态注销工具
+
+    Args:
+        tool_name: 工具名称
+
+    Returns:
+        是否注销成功
+    """
+    global _agent
+
+    for i, tool_func in enumerate(AGENT_TOOLS):
+        name = getattr(tool_func, "name", None) or getattr(
+            tool_func, "__name__", str(tool_func)
+        )
+        if name == tool_name:
+            AGENT_TOOLS.pop(i)
+            _agent = None  # 强制重建
+            logger.info(f"[Agent] 动态注销工具: {tool_name} (总计 {len(AGENT_TOOLS)} 个)")
+            return True
+
+    logger.warning(f"[Agent] 工具 {tool_name} 未找到")
+    return False
+
+
+def list_tools() -> List[Dict[str, str]]:
+    """
+    列出所有已注册的工具
+
+    Returns:
+        工具信息列表 [{"name": str, "description": str}]
+    """
+    tools = []
+    for tool_func in AGENT_TOOLS:
+        name = getattr(tool_func, "name", None) or getattr(
+            tool_func, "__name__", str(tool_func)
+        )
+        desc = getattr(tool_func, "description", "") or ""
+        tools.append({"name": name, "description": desc[:100]})
+    return tools
 
 
 # ========== LLM / Agent 全局单例 ==========
@@ -190,10 +261,11 @@ def get_agent(force_rebuild: bool = False):
     global _agent, _agent_model_name
 
     fallback = get_fallback_llm()
+    # 先取 LLM 实例再读模型名，保证两者一致（get_llm 可能在冷却到期时切换模型）
+    llm = fallback.get_llm()
     current_model = fallback.model_name
 
     if _agent is None or force_rebuild or _agent_model_name != current_model:
-        llm = fallback.get_llm()
         _agent = _create_agent(llm)
         _agent_model_name = current_model
         logger.info(f"[Agent] 初始化完成 model={current_model} fallback={fallback.is_using_fallback}")
@@ -210,7 +282,8 @@ def check_llm_health() -> dict:
         {"status": "healthy"/"unhealthy", "model": str, "latency_ms": int, "fallback_active": bool}
     """
     fallback = get_fallback_llm()
-    llm = fallback.get_llm()
+    # 使用只读 peek，避免健康检查的副作用干扰熔断/试探状态
+    llm = fallback.peek_llm()
     start = time.time()
 
     try:
@@ -250,7 +323,11 @@ def _serialize_history(history: List) -> list:
         if isinstance(msg, HumanMessage):
             result.append({"role": "human", "content": msg.content})
         elif isinstance(msg, AIMessage):
-            result.append({"role": "ai", "content": msg.content})
+            entry = {"role": "ai", "content": msg.content}
+            tools_used = (msg.additional_kwargs or {}).get("tools_used")
+            if tools_used:
+                entry["tools_used"] = tools_used
+            result.append(entry)
         elif isinstance(msg, ToolMessage):
             result.append({"role": "tool", "content": msg.content, "tool_call_id": getattr(msg, "tool_call_id", "")})
     return result
@@ -265,7 +342,10 @@ def _deserialize_history(data: list) -> List:
         if role == "human":
             result.append(HumanMessage(content=content))
         elif role == "ai":
-            result.append(AIMessage(content=content))
+            ai_msg = AIMessage(content=content)
+            if item.get("tools_used"):
+                ai_msg.additional_kwargs["tools_used"] = item["tools_used"]
+            result.append(ai_msg)
         elif role == "tool":
             result.append(ToolMessage(content=content, tool_call_id=item.get("tool_call_id", "")))
     return result
@@ -293,7 +373,9 @@ class ChatSession:
     """聊天会话管理"""
 
     def __init__(self, session_id: str = None, created_at: float = None):
-        self.session_id = session_id or str(uuid.uuid4())[:8]
+        if session_id and not is_valid_session_id(session_id):
+            raise ValueError(f"非法的会话 ID: {session_id!r}")
+        self.session_id = session_id or str(uuid.uuid4())
         self.chat_history: List = []
         self.created_at = created_at or time.time()
 
@@ -314,6 +396,9 @@ class ChatSession:
 
     def _save(self):
         """将会话持久化到磁盘"""
+        if not is_valid_session_id(self.session_id):
+            logger.error(f"[Session] 拒绝保存非法会话 ID: {self.session_id!r}")
+            return
         try:
             SESSIONS_DIR.mkdir(parents=True, exist_ok=True)
             data = {
@@ -328,18 +413,15 @@ class ChatSession:
             logger.error(f"[Session] 保存会话失败 {self.session_id}: {e}")
 
     def _build_messages(self, user_message: str) -> List:
-        """构建发送给 LLM 的消息列表（含记忆注入 + MicroCompact + 摘要压缩）"""
+        """构建发送给 LLM 的消息列表（含记忆注入 + 摘要压缩）"""
         # 加载记忆
         memory_context = load_memories()
 
         # 组装系统提示词
         system_prompt = build_system_prompt(memory_context)
 
-        # MicroCompact 压缩旧工具结果
-        compacted_history = compact_history(self.chat_history)
-
         # 对话摘要压缩（当历史过长时）
-        summarized_history = _summarize_history(compacted_history)
+        summarized_history = _summarize_history(self.chat_history)
 
         # 组装消息
         messages = [SystemMessage(content=system_prompt)]
@@ -348,6 +430,40 @@ class ChatSession:
         messages.append(HumanMessage(content=user_message))
 
         return messages
+
+    def _invoke_agent(self, user_message: str):
+        """
+        调用 Agent 执行一次对话（主模型失败后立即降级备用模型重试）
+
+        Returns:
+            agent.invoke 的结果
+
+        Raises:
+            最后一次尝试仍失败时抛出异常
+        """
+        fallback = get_fallback_llm()
+        last_error = None
+
+        for attempt in range(2):
+            if attempt > 0:
+                # 强制切到备用模型并重建 Agent，确保重试用的是另一个模型
+                if not fallback.has_fallback:
+                    break
+                fallback.force_fallback()
+                logger.warning(f"[Agent] 主模型失败，切换到备用模型重试: {last_error}")
+
+            agent = get_agent(force_rebuild=(attempt > 0))
+            messages = self._build_messages(user_message)
+            retry_stats.record_call()
+
+            try:
+                return agent.invoke({"messages": messages})
+            except Exception as e:
+                last_error = e
+                fallback.record_failure(e)
+                retry_stats.record_error(e)
+
+        raise last_error if last_error else RuntimeError("Agent 调用失败")
 
     def chat(self, user_message: str) -> Dict:
         """
@@ -358,89 +474,75 @@ class ChatSession:
         """
         fallback = get_fallback_llm()
 
-        for attempt in range(2):  # 最多尝试 2 次（主模型 + 备用模型）
-            try:
-                agent = get_agent(force_rebuild=(attempt > 0))
-                messages = self._build_messages(user_message)
+        try:
+            result = self._invoke_agent(user_message)
+        except Exception as e:
+            logger.error(f"[Agent] session={self.session_id} error: {e}", exc_info=True)
+            return {
+                "reply": "抱歉，系统处理遇到问题，请稍后再试或联系人工客服。",
+                "tools_used": [],
+                "session_id": self.session_id,
+                "token_usage": TokenUsage().to_dict(),
+            }
 
-                retry_stats.record_call()
+        fallback.record_success()
 
-                # 调用 Agent
-                result = agent.invoke({"messages": messages})
+        # 提取回复和工具调用
+        reply = ""
+        tools_used = []
+        token_usage = TokenUsage()
 
-                # 记录成功
-                fallback.record_success()
+        for msg in result.get("messages", []):
+            if hasattr(msg, "type"):
+                if msg.type == "ai" and msg.content:
+                    reply = msg.content
+                if msg.type == "ai" and hasattr(msg, "tool_calls"):
+                    for tc in msg.tool_calls:
+                        tool_name = tc.get("name", "") if isinstance(tc, dict) else getattr(tc, "name", "")
+                        if tool_name and tool_name not in tools_used:
+                            tools_used.append(tool_name)
 
-                # 提取回复和工具调用
-                reply = ""
-                tools_used = []
-                token_usage = TokenUsage()
+        # 尝试提取 usage
+        for msg in reversed(result.get("messages", [])):
+            if hasattr(msg, "usage_metadata") and msg.usage_metadata:
+                usage = msg.usage_metadata
+                token_usage.input_tokens = usage.get("input_tokens", 0)
+                token_usage.output_tokens = usage.get("output_tokens", 0)
+                token_usage.total_tokens = usage.get("total_tokens", 0)
+                break
 
-                for msg in result.get("messages", []):
-                    if hasattr(msg, "type"):
-                        if msg.type == "ai" and msg.content:
-                            reply = msg.content
-                        if msg.type == "ai" and hasattr(msg, "tool_calls"):
-                            for tc in msg.tool_calls:
-                                tool_name = tc.get("name", "") if isinstance(tc, dict) else getattr(tc, "name", "")
-                                if tool_name and tool_name not in tools_used:
-                                    tools_used.append(tool_name)
+        if not reply:
+            reply = "抱歉，我暂时无法回答这个问题。"
 
-                # 尝试提取 usage
-                for msg in reversed(result.get("messages", [])):
-                    if hasattr(msg, "usage_metadata") and msg.usage_metadata:
-                        usage = msg.usage_metadata
-                        token_usage.input_tokens = usage.get("input_tokens", 0)
-                        token_usage.output_tokens = usage.get("output_tokens", 0)
-                        token_usage.total_tokens = usage.get("total_tokens", 0)
-                        break
+        # 检测情绪升级标记
+        escalate = "[ESCALATE]" in reply
+        if escalate:
+            reply = reply.replace("[ESCALATE]", "").strip()
 
-                if not reply:
-                    reply = "抱歉，我暂时无法回答这个问题。"
+        # 更新聊天历史
+        self.chat_history.append(HumanMessage(content=user_message))
+        ai_msg = AIMessage(content=reply)
+        if tools_used:
+            ai_msg.additional_kwargs["tools_used"] = tools_used
+        self.chat_history.append(ai_msg)
 
-                # 检测情绪升级标记
-                escalate = "[ESCALATE]" in reply
-                if escalate:
-                    reply = reply.replace("[ESCALATE]", "").strip()
+        if len(self.chat_history) > 40:
+            self.chat_history = self.chat_history[-40:]
 
-                # 更新聊天历史
-                self.chat_history.append(HumanMessage(content=user_message))
-                self.chat_history.append(AIMessage(content=reply))
+        self._save()
 
-                if len(self.chat_history) > 40:
-                    self.chat_history = self.chat_history[-40:]
+        logger.info(
+            f"[Agent] session={self.session_id} tools={tools_used} "
+            f"tokens={token_usage.total_tokens} model={fallback.model_name} escalate={escalate}"
+        )
 
-                self._save()
-
-                logger.info(
-                    f"[Agent] session={self.session_id} tools={tools_used} "
-                    f"tokens={token_usage.total_tokens} model={fallback.model_name} escalate={escalate}"
-                )
-
-                return {
-                    "reply": reply,
-                    "tools_used": tools_used,
-                    "session_id": self.session_id,
-                    "token_usage": token_usage.to_dict(),
-                    "escalate": escalate,
-                }
-
-            except Exception as e:
-                fallback.record_failure(e)
-                retry_stats.record_error(e)
-
-                # 如果还有备用模型可以尝试，继续循环
-                if attempt == 0 and fallback.has_fallback:
-                    logger.warning(f"[Agent] 主模型失败，切换到备用模型重试")
-                    continue
-
-                logger.error(f"[Agent] session={self.session_id} error: {e}", exc_info=True)
-                return {
-                    "reply": "抱歉，系统处理遇到问题，请稍后再试或联系人工客服。",
-                    "tools_used": [],
-                    "session_id": self.session_id,
-                    "token_usage": TokenUsage().to_dict(),
-                }
+        return {
+            "reply": reply,
+            "tools_used": tools_used,
+            "session_id": self.session_id,
+            "token_usage": token_usage.to_dict(),
+            "escalate": escalate,
+        }
 
     async def chat_stream(self, user_message: str) -> AsyncGenerator[str, None]:
         """
@@ -450,101 +552,124 @@ class ChatSession:
             SSE 格式的事件字符串
         """
         fallback = get_fallback_llm()
+        reply = ""
+        tools_used = []
+        token_usage = TokenUsage()
         tokens_emitted = False
 
-        for attempt in range(2):  # 最多尝试 2 次
-            try:
-                agent = get_agent(force_rebuild=(attempt > 0))
-                messages = self._build_messages(user_message)
+        async def run_once():
+            """执行一轮流式对话，填充 reply/tools_used/token_usage"""
+            nonlocal reply, tools_used, token_usage, tokens_emitted
+            reply, tools_used, token_usage = "", [], TokenUsage()
+            agent = get_agent()
+            messages = self._build_messages(user_message)
+            retry_stats.record_call()
 
-                retry_stats.record_call()
+            async for event in agent.astream_events({"messages": messages}, version="v2"):
+                kind = event.get("event", "")
 
-                reply = ""
-                tools_used = []
-                token_usage = TokenUsage()
+                if kind == "on_chat_model_stream":
+                    chunk = event.get("data", {}).get("chunk")
+                    if chunk and hasattr(chunk, "content") and chunk.content:
+                        reply += chunk.content
+                        tokens_emitted = True
+                        yield ("token", {"content": chunk.content})
 
-                async for event in agent.astream_events({"messages": messages}, version="v2"):
-                    kind = event.get("event", "")
+                elif kind == "on_tool_start":
+                    tool_name = event.get("name", "unknown")
+                    if tool_name not in tools_used:
+                        tools_used.append(tool_name)
+                    yield ("tool_start", {"tool": tool_name})
 
-                    if kind == "on_chat_model_stream":
-                        chunk = event.get("data", {}).get("chunk")
-                        if chunk and hasattr(chunk, "content") and chunk.content:
-                            reply += chunk.content
-                            tokens_emitted = True
-                            yield _sse_event("token", {"content": chunk.content})
+                elif kind == "on_tool_end":
+                    tool_name = event.get("name", "unknown")
+                    yield ("tool_end", {"tool": tool_name})
 
-                    elif kind == "on_tool_start":
-                        tool_name = event.get("name", "unknown")
-                        if tool_name not in tools_used:
-                            tools_used.append(tool_name)
-                        yield _sse_event("tool_start", {"tool": tool_name})
+                elif kind == "on_llm_end":
+                    output = event.get("data", {}).get("output")
+                    if output and hasattr(output, "usage_metadata") and output.usage_metadata:
+                        usage = output.usage_metadata
+                        token_usage.input_tokens = usage.get("input_tokens", 0)
+                        token_usage.output_tokens = usage.get("output_tokens", 0)
+                        token_usage.total_tokens = usage.get("total_tokens", 0)
 
-                    elif kind == "on_tool_end":
-                        tool_name = event.get("name", "unknown")
-                        yield _sse_event("tool_end", {"tool": tool_name})
+        try:
+            async for evt_type, evt_data in run_once():
+                yield _sse_event(evt_type, evt_data)
+            fallback.record_success()
+        except Exception as e:
+            fallback.record_failure(e)
+            retry_stats.record_error(e)
 
-                    elif kind == "on_llm_end":
-                        output = event.get("data", {}).get("output")
-                        if output and hasattr(output, "usage_metadata") and output.usage_metadata:
-                            usage = output.usage_metadata
-                            token_usage.input_tokens = usage.get("input_tokens", 0)
-                            token_usage.output_tokens = usage.get("output_tokens", 0)
-                            token_usage.total_tokens = usage.get("total_tokens", 0)
-
-                fallback.record_success()
-
-                if not reply:
-                    reply = "抱歉，我暂时无法回答这个问题。"
-
-                # 检测情绪升级标记
-                escalate = "[ESCALATE]" in reply
-                if escalate:
-                    reply = reply.replace("[ESCALATE]", "").strip()
-                    yield _sse_event("escalate", {"reason": "用户情绪不满"})
-
-                self.chat_history.append(HumanMessage(content=user_message))
-                self.chat_history.append(AIMessage(content=reply))
-
-                if len(self.chat_history) > 40:
-                    self.chat_history = self.chat_history[-40:]
-
-                self._save()
-
-                logger.info(
-                    f"[Agent Stream] session={self.session_id} tools={tools_used} "
-                    f"tokens={token_usage.total_tokens} model={fallback.model_name} escalate={escalate}"
-                )
-
-                yield _sse_event("done", {
-                    "reply": reply,
-                    "tools_used": tools_used,
-                    "session_id": self.session_id,
-                    "token_usage": token_usage.to_dict(),
-                    "escalate": escalate,
+            # 已经输出过 token 就不能重试（用户已看到部分回复）
+            if tokens_emitted:
+                logger.error(f"[Agent Stream] 流式输出中断: {e}", exc_info=True)
+                yield _sse_event("error", {
+                    "message": "抱歉，回复过程中出现问题，请重新发送。",
                 })
-                return  # 成功，退出
+                return
 
-            except Exception as e:
-                fallback.record_failure(e)
-                retry_stats.record_error(e)
-
-                # 如果已经开始输出 token，不能重试（用户已看到部分回复）
-                if tokens_emitted:
-                    logger.error(f"[Agent Stream] 流式输出中断: {e}", exc_info=True)
-                    yield _sse_event("error", {
-                        "message": "抱歉，回复过程中出现问题，请重新发送。",
-                    })
-                    return
-
-                # 还没输出任何 token，可以尝试备用模型
-                if attempt == 0 and fallback.has_fallback:
-                    logger.warning(f"[Agent Stream] 主模型失败，切换到备用模型重试")
-                    continue
-
+            # 还没输出任何 token，强制降级备用模型后重试一次
+            if not fallback.has_fallback:
                 logger.error(f"[Agent Stream] session={self.session_id} error: {e}", exc_info=True)
                 yield _sse_event("error", {
                     "message": "抱歉，系统处理遇到问题，请稍后再试或联系人工客服。",
                 })
+                return
+
+            fallback.force_fallback()
+            logger.warning("[Agent Stream] 主模型失败，切换到备用模型重试")
+            try:
+                get_agent(force_rebuild=True)
+                async for evt_type, evt_data in run_once():
+                    yield _sse_event(evt_type, evt_data)
+                fallback.record_success()
+            except Exception as e2:
+                fallback.record_failure(e2)
+                retry_stats.record_error(e2)
+                logger.error(f"[Agent Stream] session={self.session_id} error: {e2}", exc_info=True)
+                yield _sse_event("error", {
+                    "message": "抱歉，系统处理遇到问题，请稍后再试或联系人工客服。",
+                })
+                return
+
+        if not reply:
+            reply = "抱歉，我暂时无法回答这个问题。"
+
+        # 检测情绪升级标记
+        escalate = "[ESCALATE]" in reply
+        if escalate:
+            reply = reply.replace("[ESCALATE]", "").strip()
+            yield _sse_event("escalate", {"reason": "用户情绪不满"})
+
+        self.chat_history.append(HumanMessage(content=user_message))
+        ai_msg = AIMessage(content=reply)
+        if tools_used:
+            ai_msg.additional_kwargs["tools_used"] = tools_used
+        self.chat_history.append(ai_msg)
+
+        if len(self.chat_history) > 40:
+            self.chat_history = self.chat_history[-40:]
+
+        self._save()
+
+        logger.info(
+            f"[Agent Stream] session={self.session_id} tools={tools_used} "
+            f"tokens={token_usage.total_tokens} model={fallback.model_name} escalate={escalate}"
+        )
+
+        yield _sse_event("done", {
+            "reply": reply,
+            "tools_used": tools_used,
+            "session_id": self.session_id,
+            "token_usage": token_usage.to_dict(),
+            "escalate": escalate,
+        })
+
+    def clear_history(self):
+        """清空聊天历史"""
+        self.chat_history = []
+        self._save()
 
     def clear_history(self):
         """清空聊天历史"""
@@ -573,7 +698,9 @@ class SessionManager:
             logger.info(f"[SessionManager] 从磁盘加载了 {loaded} 个会话")
 
     def get_session(self, session_id: str) -> ChatSession:
-        """获取或创建会话"""
+        """获取或创建会话（非法 ID 直接拒绝，防止路径穿越）"""
+        if not is_valid_session_id(session_id):
+            raise ValueError(f"非法的会话 ID: {session_id!r}")
         if session_id not in self.sessions:
             self.sessions[session_id] = ChatSession(session_id)
         return self.sessions[session_id]

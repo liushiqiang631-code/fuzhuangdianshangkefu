@@ -31,7 +31,8 @@ def get_embeddings():
         return OpenAIEmbeddings(
             model=settings.EMBEDDING_MODEL,
             openai_api_key=settings.OPENAI_API_KEY,
-            openai_api_base=settings.OPENAI_API_BASE,
+            # 优先使用独立的 Embedding API 地址，未配置时回退到 LLM 的地址
+            openai_api_base=settings.EMBEDDING_API_BASE or settings.OPENAI_API_BASE,
         )
 
 
@@ -115,9 +116,18 @@ def split_documents(documents: List, chunk_size: int = None, chunk_overlap: int 
 
 
 def create_vectorstore(chunks: List, persist_dir: Optional[str] = None) -> Chroma:
-    """将文档块向量化并存入 ChromaDB"""
+    """将文档块向量化并存入 ChromaDB（导入前清空旧 collection，避免重复入库）"""
     embeddings = get_embeddings()
     persist_path = persist_dir or settings.CHROMA_PERSIST_DIR
+
+    # 全量导入前清空既有 collection，防止重复调用 /ingest 或 /sync 导致数据翻倍
+    try:
+        import chromadb
+        client = chromadb.PersistentClient(path=persist_path)
+        client.delete_collection(settings.CHROMA_COLLECTION_NAME)
+        print(f"[ingest] 已清空旧 collection: {settings.CHROMA_COLLECTION_NAME}")
+    except Exception:
+        pass  # collection 不存在时忽略
 
     vectorstore = Chroma.from_documents(
         documents=chunks,
@@ -164,6 +174,93 @@ def ingest_pipeline(docs_dir: Optional[str] = None) -> Chroma:
     print(f"[ingest] 流水线完成! 共处理 {len(chunks)} 个文档块")
     print("=" * 50)
     return vectorstore
+
+
+def add_documents_incremental(
+    documents: List, persist_dir: Optional[str] = None
+) -> int:
+    """
+    增量添加文档到已有向量数据库
+
+    Args:
+        documents: 新文档列表（LangChain Document 对象）
+        persist_dir: ChromaDB 持久化目录
+
+    Returns:
+        新增文档块数量
+    """
+    if not documents:
+        return 0
+
+    chunks = split_documents(documents)
+    embeddings = get_embeddings()
+    persist_path = persist_dir or settings.CHROMA_PERSIST_DIR
+
+    vectorstore = Chroma(
+        embedding_function=embeddings,
+        persist_directory=persist_path,
+        collection_name=settings.CHROMA_COLLECTION_NAME,
+    )
+
+    vectorstore.add_documents(chunks)
+    print(f"[ingest] 增量添加完成: {len(chunks)} 个新文档块")
+    return len(chunks)
+
+
+def delete_documents_by_source(
+    source: str, persist_dir: Optional[str] = None
+) -> int:
+    """
+    按来源删除文档
+
+    Args:
+        source: 文档来源标识（metadata 中的 source 字段）
+        persist_dir: ChromaDB 持久化目录
+
+    Returns:
+        删除的文档数量
+    """
+    embeddings = get_embeddings()
+    persist_path = persist_dir or settings.CHROMA_PERSIST_DIR
+
+    vectorstore = Chroma(
+        embedding_function=embeddings,
+        persist_directory=persist_path,
+        collection_name=settings.CHROMA_COLLECTION_NAME,
+    )
+
+    try:
+        collection = vectorstore._collection
+        results = collection.get(where={"source": source})
+        if results and results["ids"]:
+            count = len(results["ids"])
+            collection.delete(ids=results["ids"])
+            print(f"[ingest] 已删除来源 '{source}' 的 {count} 个文档块")
+            return count
+    except Exception as e:
+        print(f"[ingest] 删除文档失败: {e}")
+
+    return 0
+
+
+def update_documents_by_source(
+    source: str, new_documents: List, persist_dir: Optional[str] = None
+) -> int:
+    """
+    按来源更新文档（先删后增）
+
+    Args:
+        source: 要更新的文档来源
+        new_documents: 新文档列表
+        persist_dir: ChromaDB 持久化目录
+
+    Returns:
+        更新后的文档块数量
+    """
+    deleted = delete_documents_by_source(source, persist_dir)
+    added = add_documents_incremental(new_documents, persist_dir)
+    print(f"[ingest] 文档更新完成: 删除 {deleted} 块，新增 {added} 块")
+    return added
 
 
 # ========== 示例数据生成 ==========
