@@ -13,17 +13,20 @@ from langchain_core.tools import tool
 USERS_DB: Dict[str, dict] = {
     "U10001": {
         "user_id": "U10001",
-        "nickname": "小明",
-        "phone": "138****1234",
-        "email": "xiaoming@example.com",
-        "member_level": "银卡",
+        "nickname": "小晴",
+        "gender": "女",
+        "phone": "138****5678",
+        "email": "xiaoqing@example.com",
+        "member_level": "VIP1",
         "points": 1280,
-        "registered_at": "2025-12-15 10:30:00",
-        "last_active": "2026-05-03 14:22:00",
-        "total_orders": 5,
+        "registered_at": (datetime.now() - timedelta(days=60)).strftime("%Y-%m-%d %H:%M:%S"),
+        "last_active": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "location": "北京 朝阳区",
+        "total_orders": 3,
         "total_spent": 1856.00,
         "status": "已激活",
-        "preferences": {"favorite_colors": ["黑色", "白色"], "favorite_styles": ["休闲", "运动"]},
+        "preferences": {"favorite_colors": ["米白色", "黑色"], "favorite_styles": ["简约", "法式", "通勤"]},
+        "preference_tags": ["法式优雅", "简约通勤", "连衣裙", "衬衫"],
     },
     "U10002": {
         "user_id": "U10002",
@@ -85,12 +88,12 @@ USERS_DB: Dict[str, dict] = {
 
 
 @tool
-def activate_user(user_id: str, activation_code: str = "") -> str:
+def activate_user(user_id: str) -> str:
     """激活新注册用户。这是敏感操作，调用前必须先告知用户将要激活账户并获得用户确认。
+    激活成功后赠送 100 积分和新人优惠券。
 
     Args:
         user_id: 用户ID
-        activation_code: 激活码（可选，留空则自动激活）
     """
     user = USERS_DB.get(user_id.upper())
     if not user:
@@ -103,22 +106,48 @@ def activate_user(user_id: str, activation_code: str = "") -> str:
             "member_level": user["member_level"],
         }, ensure_ascii=False)
 
-    # 激活用户
+    # 激活用户（真实更新积分与状态）
     user["status"] = "已激活"
+    user["points"] = user.get("points", 0) + 100
     user["last_active"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-    # 新用户赠送优惠券
+    # 新人优惠券真实写入优惠券系统（可在 query_user_coupons 中查到）
+    now = datetime.now()
     coupons = [
-        {"type": "新人专享券", "amount": 20, "threshold": 100, "expires": (datetime.now() + timedelta(days=30)).strftime("%Y-%m-%d")},
-        {"type": "首单9折券", "amount": 0, "discount": 0.9, "expires": (datetime.now() + timedelta(days=15)).strftime("%Y-%m-%d")},
+        {
+            "code": f"NEW20-{user_id.upper()}-{uuid.uuid4().hex[:6].upper()}",
+            "name": "新人专享券",
+            "type": "满减券",
+            "description": "满100减20",
+            "discount_amount": 20,
+            "min_amount": 100,
+            "expire_time": (now + timedelta(days=30)).timestamp(),
+            "target_users": [user_id.upper()],
+        },
+        {
+            "code": f"FIRST9-{user_id.upper()}-{uuid.uuid4().hex[:6].upper()}",
+            "name": "首单9折券",
+            "type": "折扣券",
+            "description": "首单享9折",
+            "discount_rate": 0.9,
+            "expire_time": (now + timedelta(days=15)).timestamp(),
+            "target_users": [user_id.upper()],
+        },
     ]
+    from tools.promotions import _load_coupons, _save_coupons
+    all_coupons = _load_coupons()
+    all_coupons.extend(coupons)
+    _save_coupons(all_coupons)
 
     return json.dumps({
         "message": f"🎉 恭喜 {user['nickname']}，账户激活成功！",
         "user_id": user_id,
         "welcome_gifts": {
             "积分": 100,
-            "优惠券": coupons,
+            "当前积分": user["points"],
+            "优惠券": [
+                {"名称": c["name"], "券码": c["code"], "优惠": c["description"]} for c in coupons
+            ],
         },
         "next_step": "您已获得新人专属福利，快去选购心仪的商品吧！",
     }, ensure_ascii=False, indent=2)

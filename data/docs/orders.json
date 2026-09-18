@@ -1,0 +1,65 @@
+[
+  {
+    "order_id": "ORD-365C6F79",
+    "user_id": "test_user_001",
+    "items": [
+      {
+        "product_name": "经典纯棉T恤",
+        "color": "黑色",
+        "size": "M",
+        "quantity": 1,
+        "price": 89.0,
+        "image_url": "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&h=400&fit=crop"
+      }
+    ],
+    "total_amount": 89.0,
+    "address": "测试地址",
+    "phone": "13800138000",
+    "remark": "",
+    "status": "待支付",
+    "created_at": 1779790333.6616702,
+    "time_str": "2026-05-26 18:12:13"
+  },
+  {
+    "order_id": "ORD-ABA5682C",
+    "user_id": "test_user_001",
+    "items": [
+      {
+        "product_name": "经典纯棉T恤",
+        "color": "黑色",
+        "size": "M",
+        "quantity": 1,
+        "price": 89.0,
+        "image_url": "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&h=400&fit=crop"
+      }
+    ],
+    "total_amount": 89.0,
+    "address": "测试地址",
+    "phone": "13800138000",
+    "remark": "",
+    "status": "待支付",
+    "created_at": 1779792640.7114499,
+    "time_str": "2026-05-26 18:50:40"
+  },
+  {
+    "order_id": "ORD-DEMO2026",
+    "user_id": "U10001",
+    "items": [
+      {
+        "product_name": "法式收腰碎花连衣裙",
+        "color": "米白色",
+        "size": "M",
+        "quantity": 1,
+        "price": 369.0,
+        "image_url": "https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?w=400&h=400&fit=crop"
+      }
+    ],
+    "total_amount": 369.0,
+    "address": "北京市朝阳区望京街道某小区",
+    "phone": "138****5678",
+    "remark": "",
+    "status": "已发货",
+    "created_at": 1789435855.922316,
+    "time_str": "2026-09-15 09:30:55"
+  }
+]

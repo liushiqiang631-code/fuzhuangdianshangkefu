@@ -1,0 +1,87 @@
+[
+  {
+    "tracking_number": "SF7720026888",
+    "order_id": "ORD-DEMO2026",
+    "carrier": "顺丰速运",
+    "shipped_at": "2026-09-17 09:30:55",
+    "estimated_delivery": "2026-09-20 09:30:55",
+    "status": "运输中",
+    "events": [
+      {
+        "time": "2026-09-17 09:30",
+        "location": "北京",
+        "description": "包裹已从北京顺义转运中心发出"
+      },
+      {
+        "time": "2026-09-17 13:30",
+        "location": "北京",
+        "description": "到达北京朝阳望京营业点"
+      },
+      {
+        "time": "2026-09-18 01:30",
+        "location": "北京",
+        "description": "派送中，预计今日送达"
+      }
+    ]
+  },
+  {
+    "tracking_number": "SF1234567890",
+    "order_id": "ORD20260430001",
+    "carrier": "顺丰速运",
+    "shipped_at": "2026-05-01 09:15:00",
+    "estimated_delivery": "2026-05-03 18:00:00",
+    "status": "运输中",
+    "events": [
+      {
+        "time": "2026-05-01 09:15:00",
+        "location": "上海",
+        "description": "包裹已从上海浦东转运中心发出"
+      },
+      {
+        "time": "2026-05-01 20:32:00",
+        "location": "上海",
+        "description": "到达上海虹桥中转场"
+      },
+      {
+        "time": "2026-05-02 06:10:00",
+        "location": "上海",
+        "description": "包裹已到达上海浦东张江营业点"
+      },
+      {
+        "time": "2026-05-02 08:45:00",
+        "location": "上海",
+        "description": "快递员已揽件准备派送"
+      }
+    ]
+  },
+  {
+    "tracking_number": "YT9876543210",
+    "order_id": "ORD20260502003",
+    "carrier": "圆通速递",
+    "shipped_at": "2026-05-03 08:30:00",
+    "estimated_delivery": "2026-05-05 18:00:00",
+    "status": "已签收",
+    "events": [
+      {
+        "time": "2026-05-03 08:30:00",
+        "location": "广州",
+        "description": "包裹已从广州天河转运中心发出"
+      },
+      {
+        "time": "2026-05-04 02:15:00",
+        "location": "广州",
+        "description": "到达广州珠江新城营业点"
+      },
+      {
+        "time": "2026-05-04 09:00:00",
+        "location": "广州",
+        "description": "派送中，快递员张师傅 13800000000"
+      },
+      {
+        "time": "2026-05-04 11:26:00",
+        "location": "广州",
+        "description": "包裹已签收，签收人：本人"
+      }
+    ]
+  }
+]

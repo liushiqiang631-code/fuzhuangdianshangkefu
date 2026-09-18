@@ -1,0 +1,27 @@
+[
+  {
+    "name": "全场满减",
+    "type": "满减",
+    "description": "满200减30，满500减80",
+    "discount": "满200减30；满500减80",
+    "min_amount": 200,
+    "start_time": 0,
+    "end_time": 1830268799
+  },
+  {
+    "name": "秋季新品特惠",
+    "type": "折扣",
+    "description": "秋季卫衣、外套类新品 8.8 折",
+    "discount": "8.8折",
+    "start_time": 0,
+    "end_time": 1793462399
+  },
+  {
+    "name": "新客首单礼",
+    "type": "新人券",
+    "description": "新注册用户首单9折",
+    "discount": "9折",
+    "start_time": 0,
+    "end_time": 1830268799
+  }
+]

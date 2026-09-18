@@ -36,7 +36,9 @@
       "四季可穿"
     ],
     "stock_status": "充足",
-    "sales_count": 3280
+    "sales_count": 3280,
+    "rating": 4.7,
+    "rating_count": 402
   },
   {
     "id": "P002",
@@ -78,7 +80,9 @@
       "四季可穿"
     ],
     "stock_status": "充足",
-    "sales_count": 2150
+    "sales_count": 2150,
+    "rating": 4.7,
+    "rating_count": 1303
   },
   {
     "id": "P003",
@@ -115,7 +119,9 @@
       "鸭绒"
     ],
     "stock_status": "部分色号紧张",
-    "sales_count": 1890
+    "sales_count": 1890,
+    "rating": 4.4,
+    "rating_count": 719
   },
   {
     "id": "P004",
@@ -151,7 +157,9 @@
       "法式"
     ],
     "stock_status": "充足",
-    "sales_count": 1560
+    "sales_count": 1560,
+    "rating": 4.7,
+    "rating_count": 2533
   },
   {
     "id": "P005",
@@ -190,7 +198,9 @@
       "秋冬"
     ],
     "stock_status": "充足",
-    "sales_count": 2760
+    "sales_count": 2760,
+    "rating": 4.4,
+    "rating_count": 2028
   },
   {
     "id": "P006",
@@ -230,7 +240,9 @@
       "通勤"
     ],
     "stock_status": "充足",
-    "sales_count": 1920
+    "sales_count": 1920,
+    "rating": 4.3,
+    "rating_count": 683
   },
   {
     "id": "P007",
@@ -267,7 +279,9 @@
       "文艺"
     ],
     "stock_status": "充足",
-    "sales_count": 870
+    "sales_count": 870,
+    "rating": 4.4,
+    "rating_count": 2369
   },
   {
     "id": "P008",
@@ -309,7 +323,9 @@
       "舒适"
     ],
     "stock_status": "充足",
-    "sales_count": 1640
+    "sales_count": 1640,
+    "rating": 4.7,
+    "rating_count": 2598
   },
   {
     "id": "P009",
@@ -348,7 +364,9 @@
       "百搭"
     ],
     "stock_status": "充足",
-    "sales_count": 1380
+    "sales_count": 1380,
+    "rating": 4.4,
+    "rating_count": 2532
   },
   {
     "id": "P010",
@@ -387,7 +405,9 @@
       "休闲"
     ],
     "stock_status": "充足",
-    "sales_count": 980
+    "sales_count": 980,
+    "rating": 4.6,
+    "rating_count": 2139
   },
   {
     "id": "P011",
@@ -424,7 +444,9 @@
       "春秋"
     ],
     "stock_status": "充足",
-    "sales_count": 1120
+    "sales_count": 1120,
+    "rating": 4.7,
+    "rating_count": 326
   },
   {
     "id": "P012",
@@ -460,7 +482,9 @@
       "春秋"
     ],
     "stock_status": "充足",
-    "sales_count": 760
+    "sales_count": 760,
+    "rating": 4.8,
+    "rating_count": 953
   },
   {
     "id": "P013",
@@ -497,7 +521,9 @@
       "通勤"
     ],
     "stock_status": "充足",
-    "sales_count": 1340
+    "sales_count": 1340,
+    "rating": 4.7,
+    "rating_count": 1693
   },
   {
     "id": "P014",
@@ -536,7 +562,9 @@
       "美式"
     ],
     "stock_status": "充足",
-    "sales_count": 1050
+    "sales_count": 1050,
+    "rating": 4.5,
+    "rating_count": 1181
   },
   {
     "id": "P015",
@@ -574,7 +602,9 @@
       "舒适"
     ],
     "stock_status": "充足",
-    "sales_count": 2080
+    "sales_count": 2080,
+    "rating": 4.9,
+    "rating_count": 1678
   },
   {
     "id": "P016",
@@ -611,7 +641,9 @@
       "通勤"
     ],
     "stock_status": "部分尺码紧张",
-    "sales_count": 680
+    "sales_count": 680,
+    "rating": 4.4,
+    "rating_count": 1856
   },
   {
     "id": "P017",
@@ -649,7 +681,9 @@
       "潮流"
     ],
     "stock_status": "充足",
-    "sales_count": 920
+    "sales_count": 920,
+    "rating": 4.4,
+    "rating_count": 1708
   },
   {
     "id": "P018",
@@ -690,7 +724,9 @@
       "修身"
     ],
     "stock_status": "充足",
-    "sales_count": 1450
+    "sales_count": 1450,
+    "rating": 4.7,
+    "rating_count": 477
   },
   {
     "id": "P019",
@@ -730,7 +766,9 @@
       "夏季"
     ],
     "stock_status": "充足",
-    "sales_count": 1680
+    "sales_count": 1680,
+    "rating": 4.7,
+    "rating_count": 2496
   },
   {
     "id": "P020",
@@ -767,6 +805,49 @@
       "轻薄"
     ],
     "stock_status": "充足",
-    "sales_count": 2340
+    "sales_count": 2340,
+    "rating": 4.4,
+    "rating_count": 1850
+  },
+  {
+    "id": "P021",
+    "name": "法式收腰碎花连衣裙",
+    "category": "裙装/连衣裙",
+    "price": 369.0,
+    "original_price": 499.0,
+    "material": "100%聚酯纤维雪纺（内衬：100%铜氨纤维）",
+    "colors": [
+      "米白色",
+      "卡其色",
+      "黑色"
+    ],
+    "sizes": [
+      "XS",
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "description": "法式碎花设计，收腰版型显瘦气质，V领优雅浪漫，内衬防走光。垂感面料柔软亲肤，适合春夏通勤与约会穿着。",
+    "image_url": "https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?w=400&h=400&fit=crop",
+    "size_chart": {
+      "XS": "胸围80cm 腰围62cm 裙长108cm",
+      "S": "胸围84cm 腰围66cm 裙长110cm",
+      "M": "胸围88cm 腰围70cm 裙长112cm",
+      "L": "胸围92cm 腰围74cm 裙长114cm",
+      "XL": "胸围96cm 腰围78cm 裙长116cm"
+    },
+    "care_instructions": "建议冷水手洗，不可漂白，阴凉处晾干，低温熨烫",
+    "tags": [
+      "温柔气质",
+      "显瘦版型",
+      "法式",
+      "连衣裙",
+      "碎花"
+    ],
+    "stock_status": "充足",
+    "sales_count": 1263,
+    "rating": 4.8,
+    "rating_count": 1263
   }
 ]

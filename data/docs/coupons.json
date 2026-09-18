@@ -1,0 +1,12 @@
+[
+  {
+    "code": "SPRING30",
+    "name": "全店通用满减券",
+    "type": "满减券",
+    "description": "满200减30，全店通用",
+    "discount_amount": 30,
+    "min_amount": 200,
+    "expire_time": 1793462399,
+    "target_users": []
+  }
+]

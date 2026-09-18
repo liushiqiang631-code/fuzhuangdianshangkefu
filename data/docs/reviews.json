@@ -1,0 +1,68 @@
+[
+  {
+    "product_name": "经典纯棉T恤",
+    "user": "小明",
+    "rating": 5,
+    "comment": "面料很舒服，纯棉透气，洗了不变形，值得回购！"
+  },
+  {
+    "product_name": "经典纯棉T恤",
+    "user": "小华",
+    "rating": 4,
+    "comment": "版型不错，就是白色有点透，建议买深色。"
+  },
+  {
+    "product_name": "经典纯棉T恤",
+    "user": "小李",
+    "rating": 5,
+    "comment": "第二件了，百搭神器。"
+  },
+  {
+    "product_name": "修身牛仔裤",
+    "user": "小张",
+    "rating": 4,
+    "comment": "修身效果很好，弹力合适，稍微有点味道晒晒就好。"
+  },
+  {
+    "product_name": "修身牛仔裤",
+    "user": "小王",
+    "rating": 5,
+    "comment": "裤长合适，水洗色自然，性价比高。"
+  },
+  {
+    "product_name": "轻薄羽绒服",
+    "user": "小赵",
+    "rating": 5,
+    "comment": "很轻但很暖，可以收纳成小包，出差神器。"
+  },
+  {
+    "product_name": "碎花连衣裙",
+    "user": "小美",
+    "rating": 4,
+    "comment": "裙子很仙，内衬防走光好评，腰线位置刚好。"
+  },
+  {
+    "product_name": "运动卫衣",
+    "user": "小刘",
+    "rating": 4,
+    "comment": "加绒款暖和，不起球，宽松版型显瘦。"
+  },
+  {
+    "product_name": "法式收腰碎花连衣裙",
+    "user": "小晴",
+    "rating": 5,
+    "comment": "裙子超仙！米白色很温柔，收腰设计显腰细，同事都问链接。"
+  },
+  {
+    "product_name": "法式收腰碎花连衣裙",
+    "user": "Luna",
+    "rating": 5,
+    "comment": "面料垂感很好，不透，内衬舒服，165/52 穿 S 合适。"
+  },
+  {
+    "product_name": "法式收腰碎花连衣裙",
+    "user": "可可",
+    "rating": 4,
+    "comment": "好看，碎花很清新，就是 XS 有点长，垫个内增高刚刚好。"
+  }
+]
