@@ -7,7 +7,7 @@
 ### 核心能力
 - **智能对话**：多轮对话，上下文记忆，自动调用工具完成任务
 - **RAG 知识库**：ChromaDB 向量检索 + 中文 BGE Embedding，支持商品、FAQ、穿搭指南
-- **Agent 工具集**：13 个工具覆盖商品搜索、订单查询、价格计算、用户管理
+- **Agent 工具集**：36 个工具覆盖商品搜索、购物车下单、订单物流、优惠券促销、用户画像、转人工工单
 - **流式输出**：SSE 逐 token 返回，实时展示工具调用进度
 
 ### 业务功能
@@ -54,6 +54,18 @@ python -m app.main
 
 访问 http://localhost:8000 即可使用。
 
+### AI 客服工作台
+
+访问首页即是客服工作台（MODEWEAR 风格）：
+
+- **左侧**：店铺导航（工作台 / 会话 / 订单 / 商品 / 客户 / 数据 / 设置）
+- **会话列表**：全部 / 待处理 / 已结束 分组，点击加载历史对话
+- **中间**：SSE 流式对话，快捷提问 chips，支持图片上传、Enter 发送
+- **右侧上下文面板**：客户信息（会员/偏好标签）、最近订单（含物流时效）、当前咨询商品（自动从对话识别，可直接加购）、AI 智能推荐（换一批）
+- **数据**：跳转 `/admin` 管理后台；**设置**：跳转 `/knowledge` 知识库管理
+
+工作台数据来自只读 API：`/api/workbench/context/{session_id}`、`/products`、`/customers`、`/orders`、`/stats`。
+
 ### Windows 一键启动
 
 双击 `启动服务.bat` 自动启动服务并打开浏览器。
@@ -95,44 +107,35 @@ LLM_FALLBACK_COOLDOWN=300  # 主模型冷却恢复时间（秒）
 ## 项目结构
 
 ```
-zhice-platform/
+服装电商客服/
 ├── config.py              # 全局配置（pydantic-settings）
-├── ingest.py              # 数据导入与向量化
+├── ingest.py              # 数据导入与向量化（导入前自动清空旧索引）
 ├── retriever.py           # 检索模块（ChromaDB 向量检索）
-├── rag_chain.py           # RAG 问答链（LCEL）
+├── rag_chain.py           # RAG 问答链（LCEL，与 Agent 共用 LLM fallback）
 ├── agent.py               # Agent 构建与会话管理
-├── llm_factory.py         # LLM 多模型 Fallback 工厂
-├── cache.py               # 工具结果 TTL 缓存
-├── retry.py               # LLM 调用重试机制
+├── llm_factory.py         # LLM 多模型 Fallback 工厂（熔断/冷却/试探）
+├── cache.py               # 工具结果 TTL 缓存（线程安全）
+├── retry.py               # LLM 调用重试配置与统计
 ├── feedback.py            # 用户反馈存储
 ├── memory.py              # 跨会话记忆管理
-├── tools/                 # Agent 工具集
-│   ├── knowledge.py       # 知识库检索工具
-│   ├── analytics.py       # 业务数据查询
-│   ├── calculator.py      # 价格/折扣/满减计算
-│   ├── user_activation.py # 用户激活/查询/推荐
-│   └── product_search.py  # 结构化商品搜索
+├── conversation_search.py # 历史对话实时搜索
+├── conversation_branch.py # 对话分支/回退
+├── tools/                 # Agent 工具集（含 storage.py 共享存储辅助）
 ├── app/                   # Web 应用
 │   ├── main.py            # FastAPI 应用入口
 │   ├── routes.py          # API 路由
-│   └── static/            # 前端静态文件
-│       ├── index.html     # 客服聊天页面
-│       ├── app.js         # 聊天前端逻辑
-│       ├── styles.css     # 样式
-│       ├── admin.html     # 管理后台页面
-│       └── admin.js       # 管理后台逻辑
+│   ├── admin_routes.py    # 管理分析路由
+│   ├── knowledge_routes.py# 知识库管理路由
+│   └── static/            # 前端静态文件（含 vendor/ 本地化 JS 库）
 ├── middleware/             # 中间件
 │   └── auth.py            # 认证/日志/限流中间件
-├── data/                  # 数据目录
-│   ├── docs/              # 知识文档
-│   ├── sessions/          # 会话持久化
-│   ├── memory/            # 跨会话记忆
-│   ├── uploads/           # 用户上传图片
-│   └── chroma_db/         # 向量数据库
+├── data/                  # 数据目录（docs/sessions/memory/uploads/chroma_db 等）
+├── tests/                 # 测试
 ├── .env                   # 环境变量
 ├── requirements.txt       # 依赖列表
-└── 启动服务.bat           # Windows 一键启动
+└── start.bat              # Windows 一键启动
 ```
+
 
 ## API 接口
 
@@ -253,6 +256,7 @@ curl -X POST http://localhost:8000/chat \
 访问 `/admin` 进入管理后台，支持：
 
 - **会话管理**：查看所有会话列表、对话详情
+- **知识库管理**：访问 `/knowledge` 页面，在线上传/编辑/删除/同步知识文档
 - **反馈统计**：好评率、好评/差评数量
 - **系统日志**：实时查看应用日志，支持 ERROR/WARNING 高亮
 
@@ -301,6 +305,10 @@ A: 首次运行会自动下载 BGE 模型（约 100MB），可手动下载后放
 ### Q: ChromaDB 数据丢失
 
 A: 向量数据库存储在 `data/chroma_db/`，删除该目录后需重新运行 `python ingest.py`
+
+### Q: 如何开启 API 认证
+
+A: 在 `.env` 中设置 `AUTH_ENABLED=true` 并修改 `AUTH_API_KEY`。开启后除页面与静态资源外的所有接口需携带 `X-API-Key` 请求头；管理后台页面右上角接口会自动读取 `localStorage["zhice-api-key"]`。
 
 ### Q: API Key 无效
 
