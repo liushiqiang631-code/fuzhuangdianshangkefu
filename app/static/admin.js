@@ -8,6 +8,14 @@ const sessionCountEl = document.querySelector("#sessionCount");
 const detailPanel = document.querySelector("#detailPanel");
 const feedbackStatsEl = document.querySelector("#feedbackStats");
 
+// 开启 AUTH_ENABLED 时，在 localStorage 中配置管理密钥：localStorage.setItem("zhice-api-key", "your-key")
+function adminHeaders(extra = {}) {
+  const apiKey = localStorage.getItem("zhice-api-key");
+  const headers = { ...extra };
+  if (apiKey) headers["X-API-Key"] = apiKey;
+  return headers;
+}
+
 function escapeHtml(value) {
   return String(value).replace(/[&<>"']/g, (char) => {
     const entities = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" };
@@ -18,7 +26,7 @@ function escapeHtml(value) {
 // 加载反馈统计
 async function loadFeedback() {
   try {
-    const res = await fetch("/admin/feedback");
+    const res = await fetch("/admin/feedback", { headers: adminHeaders() });
     const data = await res.json();
     const s = data.stats || {};
     feedbackStatsEl.innerHTML = `
@@ -35,7 +43,7 @@ async function loadFeedback() {
 // 加载会话列表
 async function loadSessions() {
   try {
-    const res = await fetch("/admin/sessions");
+    const res = await fetch("/admin/sessions", { headers: adminHeaders() });
     const data = await res.json();
     const sessions = data.sessions || [];
     sessionCountEl.textContent = sessions.length;
@@ -68,7 +76,7 @@ async function loadSessions() {
 async function loadSessionDetail(sessionId) {
   detailPanel.innerHTML = '<div class="detail-empty">加载中...</div>';
   try {
-    const res = await fetch(`/admin/sessions/${sessionId}`);
+    const res = await fetch(`/admin/sessions/${sessionId}`, { headers: adminHeaders() });
     const data = await res.json();
     const history = data.chat_history || [];
 
@@ -109,7 +117,7 @@ async function loadLogs() {
   const lines = parseInt(logLinesSelect.value) || 200;
   logContainerEl.innerHTML = '<div class="detail-empty">加载中...</div>';
   try {
-    const res = await fetch(`/admin/logs?lines=${lines}`);
+    const res = await fetch(`/admin/logs?lines=${lines}`, { headers: adminHeaders() });
     const data = await res.json();
     const logs = data.logs || [];
 

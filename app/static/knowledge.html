@@ -1,0 +1,880 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>知识库管理 - 服装电商智能客服</title>
+  <style>
+    :root {
+      --blue: #1976d2;
+      --blue-dark: #1768bc;
+      --bg: #f4f6f8;
+      --panel: #ffffff;
+      --line: #e6ebf1;
+      --text: #222831;
+      --muted: #7a8794;
+      --success: #10b981;
+      --danger: #ef4444;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Microsoft YaHei", "PingFang SC", "Segoe UI", Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    header {
+      background: linear-gradient(135deg, var(--blue), var(--blue-dark));
+      color: white;
+      padding: 24px 32px;
+      margin-bottom: 24px;
+      border-radius: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 24px;
+    }
+
+    header p {
+      margin: 4px 0 0;
+      opacity: 0.85;
+      font-size: 14px;
+    }
+
+    .back-link {
+      color: white;
+      text-decoration: none;
+      padding: 8px 16px;
+      border: 1px solid rgba(255,255,255,0.3);
+      border-radius: 8px;
+      font-size: 14px;
+      transition: background 0.2s;
+    }
+
+    .back-link:hover {
+      background: rgba(255,255,255,0.15);
+    }
+
+    .card {
+      background: var(--panel);
+      border-radius: 12px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+
+    .card h2 {
+      margin: 0 0 16px;
+      font-size: 18px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+      border-bottom: 2px solid var(--line);
+      padding-bottom: 12px;
+    }
+
+    .tab {
+      padding: 8px 20px;
+      border: none;
+      background: none;
+      cursor: pointer;
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--muted);
+      border-radius: 8px;
+      transition: all 0.2s;
+    }
+
+    .tab.active {
+      background: var(--blue);
+      color: white;
+    }
+
+    .tab:hover:not(.active) {
+      background: #f3f4f6;
+    }
+
+    .upload-area {
+      border: 2px dashed var(--line);
+      border-radius: 12px;
+      padding: 40px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .upload-area:hover {
+      border-color: var(--blue);
+      background: #f8fafc;
+    }
+
+    .upload-area.dragover {
+      border-color: var(--blue);
+      background: #e8f2ff;
+    }
+
+    .upload-icon {
+      font-size: 48px;
+      margin-bottom: 12px;
+    }
+
+    .upload-text {
+      font-size: 16px;
+      color: var(--muted);
+    }
+
+    .upload-hint {
+      font-size: 13px;
+      color: #9ca3af;
+      margin-top: 8px;
+    }
+
+    .file-input {
+      display: none;
+    }
+
+    .btn {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-primary {
+      background: var(--blue);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: var(--blue-dark);
+    }
+
+    .btn-danger {
+      background: var(--danger);
+      color: white;
+    }
+
+    .btn-danger:hover {
+      background: #dc2626;
+    }
+
+    .btn-outline {
+      background: white;
+      color: var(--blue);
+      border: 1px solid var(--blue);
+    }
+
+    .btn-outline:hover {
+      background: #e8f2ff;
+    }
+
+    .btn-sm {
+      padding: 6px 12px;
+      font-size: 13px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th, td {
+      padding: 12px 16px;
+      text-align: left;
+      border-bottom: 1px solid var(--line);
+    }
+
+    th {
+      background: #f9fafb;
+      font-weight: 600;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    tr:hover {
+      background: #f9fafb;
+    }
+
+    .file-icon {
+      font-size: 24px;
+      margin-right: 8px;
+    }
+
+    .file-info {
+      display: flex;
+      align-items: center;
+    }
+
+    .file-name {
+      font-weight: 600;
+    }
+
+    .file-meta {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .status-badge {
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .status-synced {
+      background: #ecfdf5;
+      color: #10b981;
+    }
+
+    .status-pending {
+      background: #fef3c7;
+      color: #d97706;
+    }
+
+    .actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .search-bar {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .search-input {
+      flex: 1;
+      padding: 10px 16px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      font-size: 14px;
+    }
+
+    .search-input:focus {
+      outline: none;
+      border-color: var(--blue);
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .stat-card {
+      background: #f9fafb;
+      padding: 16px;
+      border-radius: 8px;
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--blue);
+    }
+
+    .stat-label {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    .alert {
+      padding: 12px 16px;
+      border-radius: 8px;
+      margin-bottom: 16px;
+      font-size: 14px;
+    }
+
+    .alert-success {
+      background: #ecfdf5;
+      color: #10b981;
+      border: 1px solid #a7f3d0;
+    }
+
+    .alert-error {
+      background: #fef2f2;
+      color: #ef4444;
+      border: 1px solid #fecaca;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 40px;
+      color: var(--muted);
+    }
+
+    .empty-icon {
+      font-size: 48px;
+      margin-bottom: 12px;
+    }
+
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal {
+      background: white;
+      border-radius: 12px;
+      padding: 24px;
+      max-width: 600px;
+      width: 90%;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+
+    .modal h3 {
+      margin: 0 0 16px;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-group label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 6px;
+      font-size: 14px;
+    }
+
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      font-size: 14px;
+    }
+
+    .form-group textarea {
+      min-height: 120px;
+      resize: vertical;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+      margin-top: 20px;
+    }
+
+    .progress-bar {
+      height: 8px;
+      background: #e5e7eb;
+      border-radius: 4px;
+      overflow: hidden;
+      margin-top: 8px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: var(--blue);
+      transition: width 0.3s;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div>
+        <h1>📚 知识库管理</h1>
+        <p>管理商品信息、FAQ、政策文档等知识内容</p>
+      </div>
+      <a href="/admin" class="back-link">← 返回管理后台</a>
+    </header>
+
+    <!-- 统计卡片 -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-value" id="totalDocs">-</div>
+        <div class="stat-label">文档总数</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="totalChunks">-</div>
+        <div class="stat-label">知识片段</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="lastSync">-</div>
+        <div class="stat-label">最后同步</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="dbSize">-</div>
+        <div class="stat-label">数据库大小</div>
+      </div>
+    </div>
+
+    <!-- 操作栏 -->
+    <div class="card">
+      <div class="tabs">
+        <button class="tab active" data-tab="upload">上传文档</button>
+        <button class="tab" data-tab="manage">管理文档</button>
+        <button class="tab" data-tab="editor">在线编辑</button>
+      </div>
+
+      <!-- 上传文档 -->
+      <div id="tab-upload" class="tab-content">
+        <div class="upload-area" id="dropZone">
+          <div class="upload-icon">📄</div>
+          <div class="upload-text">拖拽文件到此处，或点击选择文件</div>
+          <div class="upload-hint">支持格式：TXT、JSON、Markdown、PDF（单文件最大 10MB）</div>
+          <input type="file" class="file-input" id="fileInput" multiple accept=".txt,.json,.md,.pdf">
+        </div>
+
+        <div id="uploadProgress" style="display:none; margin-top: 20px;">
+          <div>正在上传...</div>
+          <div class="progress-bar">
+            <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+          </div>
+        </div>
+
+        <div id="uploadResult" style="margin-top: 16px;"></div>
+      </div>
+
+      <!-- 管理文档 -->
+      <div id="tab-manage" class="tab-content" style="display:none">
+        <div class="search-bar">
+          <input type="text" class="search-input" placeholder="搜索文档名称或内容..." id="searchInput">
+          <button class="btn btn-outline" onclick="loadDocuments()">刷新</button>
+          <button class="btn btn-primary" onclick="syncDatabase()">同步数据库</button>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th>文档</th>
+              <th>类型</th>
+              <th>大小</th>
+              <th>状态</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody id="docsTableBody">
+            <tr>
+              <td colspan="5" class="empty-state">
+                <div class="empty-icon">📭</div>
+                <div>暂无文档</div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- 在线编辑 -->
+      <div id="tab-editor" class="tab-content" style="display:none">
+        <div class="form-group">
+          <label>文档名称</label>
+          <input type="text" id="docName" placeholder="例如：faq.md">
+        </div>
+        <div class="form-group">
+          <label>文档类型</label>
+          <select id="docType">
+            <option value="faq">FAQ</option>
+            <option value="product">商品信息</option>
+            <option value="policy">政策文档</option>
+            <option value="guide">使用指南</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>文档内容</label>
+          <textarea id="docContent" placeholder="输入文档内容...支持 Markdown 格式"></textarea>
+        </div>
+        <div style="display: flex; gap: 12px;">
+          <button class="btn btn-primary" onclick="saveDocument()">保存文档</button>
+          <button class="btn btn-outline" onclick="clearEditor()">清空</button>
+        </div>
+        <div id="editorResult" style="margin-top: 16px;"></div>
+      </div>
+    </div>
+
+    <!-- 使用说明 -->
+    <div class="card">
+      <h2>📖 使用说明</h2>
+      <div style="font-size: 14px; color: #4b5563; line-height: 1.8;">
+        <p><strong>上传文档：</strong>支持 TXT、JSON、Markdown 格式的文本文件。上传后系统会自动进行文本分割和向量化。</p>
+        <p><strong>JSON 格式：</strong>商品数据建议使用 JSON 格式，包含 name、price、category、description 等字段。</p>
+        <p><strong>同步数据库：</strong>修改文档后需点击"同步数据库"使更改生效。</p>
+        <p><strong>在线编辑：</strong>适合快速修改 FAQ、添加商品信息等场景。</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 编辑模态框 -->
+  <div class="modal-overlay" id="editModal">
+    <div class="modal">
+      <h3>编辑文档</h3>
+      <div class="form-group">
+        <label>文档名称</label>
+        <input type="text" id="editDocName" readonly>
+      </div>
+      <div class="form-group">
+        <label>文档内容</label>
+        <textarea id="editDocContent" rows="15"></textarea>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-outline" onclick="closeEditModal()">取消</button>
+        <button class="btn btn-primary" onclick="saveEdit()">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 标签切换
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.style.display = 'none');
+        tab.classList.add('active');
+        document.getElementById(`tab-${tab.dataset.tab}`).style.display = 'block';
+      });
+    });
+
+    // 文件上传
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('fileInput');
+
+    dropZone.addEventListener('click', () => fileInput.click());
+
+    dropZone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dropZone.classList.add('dragover');
+    });
+
+    dropZone.addEventListener('dragleave', () => {
+      dropZone.classList.remove('dragover');
+    });
+
+    dropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropZone.classList.remove('dragover');
+      const files = e.dataTransfer.files;
+      if (files.length) uploadFiles(files);
+    });
+
+    fileInput.addEventListener('change', () => {
+      if (fileInput.files.length) uploadFiles(fileInput.files);
+    });
+
+    async function uploadFiles(files) {
+      const progressDiv = document.getElementById('uploadProgress');
+      const resultDiv = document.getElementById('uploadResult');
+      const progressFill = document.getElementById('progressFill');
+
+      progressDiv.style.display = 'block';
+      resultDiv.innerHTML = '';
+
+      let success = 0;
+      let failed = 0;
+
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        progressFill.style.width = `${((i + 1) / files.length) * 100}%`;
+
+        const formData = new FormData();
+        formData.append('file', file);
+
+        try {
+          const res = await fetch('/admin/knowledge/upload', { headers: adminHeaders(),
+            method: 'POST',
+            body: formData,
+          });
+          const data = await res.json();
+
+          if (res.ok) {
+            success++;
+          } else {
+            failed++;
+            console.error('Upload failed:', data);
+          }
+        } catch (e) {
+          failed++;
+          console.error('Upload error:', e);
+        }
+      }
+
+      progressDiv.style.display = 'none';
+
+      if (success > 0) {
+        resultDiv.innerHTML = `<div class="alert alert-success">✓ 成功上传 ${success} 个文件</div>`;
+      }
+      if (failed > 0) {
+        resultDiv.innerHTML += `<div class="alert alert-error">✗ ${failed} 个文件上传失败</div>`;
+      }
+
+      loadDocuments();
+      loadStats();
+    }
+
+    // 加载文档列表
+    async function loadDocuments() {
+      const tbody = document.getElementById('docsTableBody');
+
+      try {
+        const res = await fetch('/admin/knowledge/documents', { headers: adminHeaders(), headers: adminHeaders() });
+        const data = await res.json();
+
+        if (!data.documents || data.documents.length === 0) {
+          tbody.innerHTML = `
+            <tr>
+              <td colspan="5" class="empty-state">
+                <div class="empty-icon">📭</div>
+                <div>暂无文档</div>
+              </td>
+            </tr>
+          `;
+          return;
+        }
+
+        tbody.innerHTML = data.documents.map(doc => `
+          <tr>
+            <td>
+              <div class="file-info">
+                <span class="file-icon">${getFileIcon(doc.name)}</span>
+                <div>
+                  <div class="file-name">${escapeHtml(doc.name)}</div>
+                  <div class="file-meta">${doc.chunks || 0} 个片段</div>
+                </div>
+              </div>
+            </td>
+            <td>${doc.type || '-'}</td>
+            <td>${formatSize(doc.size)}</td>
+            <td><span class="status-badge status-synced">已同步</span></td>
+            <td>
+              <div class="actions">
+                <button class="btn btn-sm btn-outline" data-action="edit" data-name="${escapeAttr(doc.name)}">编辑</button>
+                <button class="btn btn-sm btn-danger" data-action="delete" data-name="${escapeAttr(doc.name)}">删除</button>
+              </div>
+            </td>
+          </tr>
+        `).join('');
+      } catch (e) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="5" class="empty-state">
+              <div class="empty-icon">⚠️</div>
+              <div>加载失败</div>
+            </td>
+          </tr>
+        `;
+      }
+    }
+
+    // 加载统计
+    async function loadStats() {
+      try {
+        const res = await fetch('/admin/knowledge/stats', { headers: adminHeaders() });
+        const data = await res.json();
+
+        document.getElementById('totalDocs').textContent = data.total_docs || 0;
+        document.getElementById('totalChunks').textContent = data.total_chunks || 0;
+        document.getElementById('lastSync').textContent = data.last_sync || '-';
+        document.getElementById('dbSize').textContent = formatSize(data.db_size || 0);
+      } catch (e) {
+        console.error('Load stats failed:', e);
+      }
+    }
+
+    // 同步数据库
+    async function syncDatabase() {
+      if (!confirm('确定要同步数据库吗？这可能需要几分钟时间。')) return;
+
+      try {
+        const res = await fetch('/admin/knowledge/sync', { method: 'POST', headers: adminHeaders() });
+        const data = await res.json();
+
+        if (res.ok) {
+          alert('数据库同步完成！');
+          loadStats();
+        } else {
+          alert('同步失败：' + (data.detail || '未知错误'));
+        }
+      } catch (e) {
+        alert('同步失败：' + e.message);
+      }
+    }
+
+    // 编辑文档
+    async function editDocument(name) {
+      try {
+        const res = await fetch(`/admin/knowledge/documents/${encodeURIComponent(name)}`, { headers: adminHeaders(), headers: adminHeaders() });
+        const data = await res.json();
+
+        document.getElementById('editDocName').value = name;
+        document.getElementById('editDocContent').value = data.content || '';
+        document.getElementById('editModal').classList.add('active');
+      } catch (e) {
+        alert('加载文档失败：' + e.message);
+      }
+    }
+
+    function closeEditModal() {
+      document.getElementById('editModal').classList.remove('active');
+    }
+
+    async function saveEdit() {
+      const name = document.getElementById('editDocName').value;
+      const content = document.getElementById('editDocContent').value;
+
+      try {
+        const res = await fetch(`/admin/knowledge/documents/${encodeURIComponent(name)}`, { headers: adminHeaders(),
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ content }),
+        });
+
+        if (res.ok) {
+          closeEditModal();
+          loadDocuments();
+        } else {
+          alert('保存失败');
+        }
+      } catch (e) {
+        alert('保存失败：' + e.message);
+      }
+    }
+
+    // 删除文档
+    async function deleteDocument(name) {
+      if (!confirm(`确定要删除文档"${name}"吗？`)) return;
+
+      try {
+        const res = await fetch(`/admin/knowledge/documents/${encodeURIComponent(name)}`, { headers: adminHeaders(),
+          method: 'DELETE',
+        });
+
+        if (res.ok) {
+          loadDocuments();
+          loadStats();
+        } else {
+          alert('删除失败');
+        }
+      } catch (e) {
+        alert('删除失败：' + e.message);
+      }
+    }
+
+    // 在线编辑保存
+    async function saveDocument() {
+      const name = document.getElementById('docName').value;
+      const type = document.getElementById('docType').value;
+      const content = document.getElementById('docContent').value;
+      const resultDiv = document.getElementById('editorResult');
+
+      if (!name || !content) {
+        resultDiv.innerHTML = '<div class="alert alert-error">请填写文档名称和内容</div>';
+        return;
+      }
+
+      try {
+        const res = await fetch('/admin/knowledge/documents', { headers: adminHeaders(),
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, type, content }),
+        });
+
+        if (res.ok) {
+          resultDiv.innerHTML = '<div class="alert alert-success">✓ 文档保存成功</div>';
+          clearEditor();
+          loadDocuments();
+          loadStats();
+        } else {
+          resultDiv.innerHTML = '<div class="alert alert-error">保存失败</div>';
+        }
+      } catch (e) {
+        resultDiv.innerHTML = `<div class="alert alert-error">保存失败：${e.message}</div>`;
+      }
+    }
+
+    function clearEditor() {
+      document.getElementById('docName').value = '';
+      document.getElementById('docContent').value = '';
+    }
+
+    // 工具函数
+    function getFileIcon(name) {
+      if (name.endsWith('.json')) return '📋';
+      if (name.endsWith('.md')) return '📝';
+      if (name.endsWith('.pdf')) return '📕';
+      return '📄';
+    }
+
+    // 开启 AUTH_ENABLED 时，在 localStorage 中配置管理密钥：localStorage.setItem("zhice-api-key", "your-key")
+function adminHeaders(extra = {}) {
+  const apiKey = localStorage.getItem("zhice-api-key");
+  const headers = { ...extra };
+  if (apiKey) headers["X-API-Key"] = apiKey;
+  return headers;
+}
+
+function formatSize(bytes) {
+      if (!bytes) return '-';
+      if (bytes < 1024) return bytes + ' B';
+      if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+      return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+    }
+
+    function escapeHtml(text) {
+      return String(text).replace(/[&<>"']/g, (ch) => {
+        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[ch];
+      });
+    }
+
+    function escapeAttr(text) {
+      return escapeHtml(text).replace(/`/g, '&#96;');
+    }
+
+    // 文档操作事件委托
+    document.addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-action]');
+      if (!btn) return;
+      const action = btn.dataset.action;
+      const name = btn.dataset.name;
+      if (action === 'edit') editDocument(name);
+      if (action === 'delete') deleteDocument(name);
+    });
+
+    // 初始化
+    loadDocuments();
+    loadStats();
+  </script>
+</body>
+</html>

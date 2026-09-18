@@ -3,133 +3,239 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>服装电商客服 - 智能助手</title>
+    <title>MODEWEAR · AI 客服工作台</title>
     <link rel="stylesheet" href="/static/styles.css" />
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="/static/vendor/marked.min.js"></script>
+    <script src="/static/vendor/purify.min.js"></script>
   </head>
   <body>
-    <main class="shell">
-      <header class="topbar">
+    <div class="app">
+      <!-- ===== 左侧导航栏 ===== -->
+      <aside class="nav-rail">
         <div class="brand">
-          <div class="brand-icon">👗</div>
-          <div>
-            <h1>服装电商客服</h1>
-            <p>智能助手</p>
+          <div class="brand-name">MODEWEAR<span class="reg">®</span></div>
+          <div class="brand-slogan">更美的自己，从穿搭开始</div>
+        </div>
+
+        <nav class="nav-menu">
+          <button class="nav-item" data-nav="dashboard">
+            <svg viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/><path d="M9 21v-6h6v6"/></svg>
+            <span>工作台</span>
+          </button>
+          <button class="nav-item active" data-nav="chats">
+            <svg viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+            <span>会话</span>
+            <em class="nav-badge hidden" id="navChatBadge">0</em>
+          </button>
+          <button class="nav-item" data-nav="orders">
+            <svg viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>
+            <span>订单</span>
+          </button>
+          <button class="nav-item" data-nav="products">
+            <svg viewBox="0 0 24 24"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+            <span>商品</span>
+          </button>
+          <button class="nav-item" data-nav="customers">
+            <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <span>客户</span>
+          </button>
+          <button class="nav-item" data-nav="analytics">
+            <svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/></svg>
+            <span>数据</span>
+          </button>
+        </nav>
+
+        <div class="nav-bottom">
+          <div class="promo-card">
+            <p>用 AI 让服装零售<br/>服务更有温度</p>
+            <div class="promo-sign">Better Style<br/>A Kinder World</div>
           </div>
+          <button class="nav-item" data-nav="settings">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            <span>设置</span>
+          </button>
         </div>
-        <div class="agent-status" id="agentStatus">
-          <span class="status-dot"></span>
-          <span>客服在线 | 商品知识库已同步</span>
-          <a href="/admin" class="admin-link" target="_blank">管理后台</a>
-        </div>
-      </header>
+      </aside>
 
-      <section class="workspace">
-        <aside class="sidebar">
-          <section class="panel capability-panel">
-            <h2>🛍️ 客服能力</h2>
-            <button class="nav-item active" data-prompt="查询纯棉T恤的面料、尺码建议和退换货政策">
-              <span>👕</span>
-              <span>商品售后咨询</span>
-            </button>
-            <button class="nav-item" data-prompt="查询最近订单量、热销款和售后处理情况">
-              <span>📦</span>
-              <span>订单售后查询</span>
-            </button>
-            <button class="nav-item" data-prompt="原价259元的牛仔裤打8折，再用满200减30券，最终多少钱？">
-              <span>🏷️</span>
-              <span>优惠到手价</span>
-            </button>
-            <button class="nav-item" data-prompt="帮我确认现在日期，以及今天下单大概什么时候发货">
-              <span>⏱️</span>
-              <span>发货时效咨询</span>
-            </button>
+      <!-- ===== 主区域 ===== -->
+      <main class="workspace">
+
+        <!-- ===== 视图：会话（默认） ===== -->
+        <section class="chats-view" id="view-chats">
+          <!-- 会话列表 -->
+          <aside class="conv-panel">
+            <div class="conv-tabs">
+              <button class="conv-tab active" data-filter="all">全部 <i id="cntAll">0</i></button>
+              <button class="conv-tab" data-filter="pending">待处理 <i id="cntPending">0</i></button>
+              <button class="conv-tab" data-filter="closed">已结束 <i id="cntClosed">0</i></button>
+            </div>
+            <div class="conv-list" id="convList"></div>
+            <div class="conv-new">
+              <button id="newConvBtn" class="new-conv-btn">＋ 新的会话</button>
+            </div>
+          </aside>
+
+          <!-- 对话区 -->
+          <section class="chat-panel">
+            <header class="chat-header" id="chatHeader">
+              <div class="peer-avatar" id="peerAvatar">客</div>
+              <div class="peer-meta">
+                <div class="peer-name-row">
+                  <span class="peer-name" id="peerName">新的会话</span>
+                  <span class="badge badge-new hidden" id="peerBadge">新客</span>
+                </div>
+                <div class="peer-sub" id="peerSub">选择左侧会话开始服务</div>
+              </div>
+              <div class="peer-online"><span class="dot"></span>AI 在线</div>
+            </header>
+
+            <div class="messages" id="messages" aria-live="polite">
+              <div class="empty-hint" id="emptyHint">
+                <div class="empty-icon">💬</div>
+                <p>选择左侧会话，或点击「新的会话」开始服务</p>
+              </div>
+            </div>
+
+            <div class="quick-chips" id="quickChips">
+              <button class="chip" data-msg="请根据我的身高体重推荐这条连衣裙的尺码">推荐尺码</button>
+              <button class="chip" data-msg="帮我查看一下我的订单">查看订单</button>
+              <button class="chip" data-msg="你们的退换货政策是怎样的？">退换政策</button>
+              <button class="chip" data-msg="这条裙子有什么搭配建议？">搭配建议</button>
+              <button class="chip chip-more" id="moreChips" title="更多">···</button>
+            </div>
+
+            <form class="composer" id="composer">
+              <div class="composer-tools">
+                <button type="button" class="tool-btn" id="uploadBtn" title="上传图片">
+                  <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+                </button>
+                <button type="button" class="tool-btn" id="imageBtn" title="上传图片">
+                  <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+                </button>
+                <button type="button" class="tool-btn" id="productBtn" title="插入当前咨询商品">
+                  <svg viewBox="0 0 24 24"><path d="M20.59 13.41 13.42 20.6a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><circle cx="7" cy="7" r="1"/></svg>
+                </button>
+                <input type="file" id="imageInput" accept="image/jpeg,image/png,image/gif,image/webp" hidden />
+              </div>
+              <textarea id="messageInput" rows="1" placeholder="输入消息..." ></textarea>
+              <div class="composer-footer">
+                <span class="composer-hint">按 Enter 发送，Shift + Enter 换行</span>
+                <div id="imagePreview" class="image-preview hidden">
+                  <img id="previewImg" alt="预览" />
+                  <button type="button" id="removeImg" class="remove-img">&times;</button>
+                </div>
+                <button type="submit" class="send-btn" id="sendBtn">发送</button>
+              </div>
+            </form>
           </section>
 
-          <section class="panel quick-panel">
-            <h2>⚡ 快捷提问</h2>
-            <button class="quick-item">你们店里最推荐的帽子是哪一款？</button>
-            <button class="quick-item">哪款靴子舒服又适合通勤？</button>
-            <button class="quick-item">适合女大学生夏天的清爽穿搭</button>
-            <button class="quick-item">男生日常干净利落穿搭推荐</button>
-          </section>
+          <!-- 右侧上下文面板 -->
+          <aside class="context-panel">
+            <div class="ctx-tabs">
+              <button class="ctx-tab active" data-ctx="customer">客户信息</button>
+              <button class="ctx-tab" data-ctx="orders">订单(<i id="cntOrders">0</i>)</button>
+              <button class="ctx-tab" data-ctx="products">商品(<i id="cntProducts">0</i>)</button>
+              <button class="ctx-tab" data-ctx="replies">快捷回复</button>
+            </div>
 
-          <section class="panel stats-panel">
-            <h2>📌 店铺资料</h2>
-            <dl>
-              <div>
-                <dt>商品知识片段</dt>
-                <dd>183 块</dd>
-              </div>
-              <div>
-                <dt>服务资料来源</dt>
-                <dd>47 个</dd>
-              </div>
-              <div>
-                <dt>客服能力</dt>
-                <dd id="toolsCount">加载中</dd>
-              </div>
-              <div>
-                <dt>智能客服模型</dt>
-                <dd id="modelName">加载中</dd>
-              </div>
-              <div>
-                <dt>本次 Token 消耗</dt>
-                <dd id="tokenUsage">-</dd>
-              </div>
-            </dl>
-          </section>
-        </aside>
+            <div class="ctx-body">
+              <!-- 客户信息 -->
+              <div class="ctx-pane active" id="pane-customer">
+                <div class="skeleton" id="ctxSkeleton">
+                  <div class="sk-line w60"></div><div class="sk-line w90"></div><div class="sk-line w80"></div>
+                </div>
+                <div class="hidden" id="customerContent">
+                  <div class="customer-card">
+                    <div class="customer-head">
+                      <div class="customer-avatar" id="cAvatar">晴</div>
+                      <div class="customer-title">
+                        <span class="customer-name" id="cName">—</span>
+                        <span class="gender-icon" id="cGender">♀</span>
+                        <span class="badge badge-vip" id="cVip">VIP1</span>
+                      </div>
+                      <span class="customer-follow" id="cFollow">关注 2 个月</span>
+                    </div>
+                    <div class="customer-lines">
+                      <div class="c-line"><span>phone</span><b id="cPhone">—</b></div>
+                      <div class="c-line"><span>location</span><b id="cLocation">—</b></div>
+                      <div class="c-line"><span>likes</span><b id="cStyles">—</b></div>
+                    </div>
+                    <div class="tag-row" id="cTags"></div>
+                  </div>
 
-        <section class="chat-card">
-          <div class="chat-header">
-            <h2>💬 服装顾问对话</h2>
-            <div class="chat-actions">
-              <button id="clearBtn" type="button">清空对话</button>
-              <button id="exportBtn" type="button">导出记录</button>
+                  <div class="section-head">
+                    <h4>最近订单</h4>
+                    <button class="link-btn" data-goto="orders">查看全部 ›</button>
+                  </div>
+                  <div id="recentOrders"></div>
+
+                  <div class="section-head">
+                    <h4>当前咨询商品</h4>
+                    <button class="link-btn" data-goto="products">查看详情 ›</button>
+                  </div>
+                  <div class="current-product" id="currentProduct"></div>
+
+                  <div class="section-head">
+                    <h4>AI 智能推荐</h4>
+                    <button class="link-btn" id="shuffleRec">⟳ 换一批</button>
+                  </div>
+                  <div class="rec-grid" id="recGrid"></div>
+                </div>
+              </div>
+
+              <!-- 订单 -->
+              <div class="ctx-pane" id="pane-orders">
+                <div id="orderList" class="order-list"></div>
+              </div>
+
+              <!-- 商品 -->
+              <div class="ctx-pane" id="pane-products">
+                <input class="ctx-search" id="productSearch" placeholder="搜索商品名称 / 品类..." />
+                <div id="productList" class="product-mini-list"></div>
+              </div>
+
+              <!-- 快捷回复 -->
+              <div class="ctx-pane" id="pane-replies">
+                <div id="replyList" class="reply-list"></div>
+              </div>
+            </div>
+          </aside>
+        </section>
+
+        <!-- ===== 视图：工作台 ===== -->
+        <section class="page-view hidden" id="view-dashboard">
+          <header class="page-header"><h2>工作台</h2><p>店铺经营与服务概况</p></header>
+          <div class="stat-cards" id="statCards"></div>
+          <div class="page-section">
+            <h3>服务小贴士</h3>
+            <div class="tips">
+              <div class="tip">响应用户时优先给出结构化答案（尺码 / 物流 / 退换），减少追问轮次。</div>
+              <div class="tip">用户连续表达不满时，系统会自动提示转人工，请及时跟进工单。</div>
+              <div class="tip">会话数据每轮自动落盘，可在「数据」中查看完整历史与反馈统计。</div>
             </div>
           </div>
-
-          <div class="messages" id="messages" aria-live="polite">
-            <article class="message bot-message">
-              <div class="avatar">🤖</div>
-              <div class="bubble">
-                <div class="meta">
-                  <strong>服装电商客服</strong>
-                  <span>刚刚</span>
-                </div>
-                <p>你好！我是<strong>服装电商客服</strong>，选款、尺码、搭配、优惠和订单售后都可以问我。</p>
-                <p>我可以帮你快速处理：</p>
-                <ul>
-                  <li><strong>👕 商品咨询：</strong>查询面料、版型、尺码、洗护和退换货政策</li>
-                  <li><strong>✨ 搭配推荐：</strong>按场景、季节、身高体型推荐服装组合</li>
-                  <li><strong>🏷️ 优惠试算：</strong>计算折扣、满减、优惠券后的到手价</li>
-                  <li><strong>📦 订单售后：</strong>查询订单、物流、售后进度和店铺经营数据</li>
-                </ul>
-                <p class="muted">直接描述你的需求，我会按服装客服的方式帮你查、算、推荐。</p>
-              </div>
-            </article>
-          </div>
-
-          <form class="composer" id="chatForm">
-            <input type="file" id="imageInput" accept="image/*" hidden />
-            <button type="button" id="uploadBtn" class="upload-btn" title="上传图片">📎</button>
-            <input
-              id="messageInput"
-              name="message"
-              autocomplete="off"
-              placeholder="输入你的问题，例如：身高165体重52，通勤想买一条显瘦牛仔裤，有推荐吗？"
-            />
-            <span class="send-hint">按 Enter 发送</span>
-            <button type="submit">发送 📩</button>
-          </form>
-          <div id="imagePreview" class="image-preview" style="display:none">
-            <img id="previewImg" src="" alt="预览" />
-            <button id="removeImg" type="button" class="remove-img">&times;</button>
-          </div>
         </section>
-      </section>
-    </main>
+
+        <!-- ===== 视图：订单 ===== -->
+        <section class="page-view hidden" id="view-orders">
+          <header class="page-header"><h2>订单</h2><p>全店订单列表</p></header>
+          <div id="pageOrders" class="order-list wide"></div>
+        </section>
+
+        <!-- ===== 视图：商品 ===== -->
+        <section class="page-view hidden" id="view-products">
+          <header class="page-header"><h2>商品</h2><p>在售商品库</p></header>
+          <div id="pageProducts" class="product-grid-page"></div>
+        </section>
+
+        <!-- ===== 视图：客户 ===== -->
+        <section class="page-view hidden" id="view-customers">
+          <header class="page-header"><h2>客户</h2><p>会员与客户列表</p></header>
+          <div id="pageCustomers" class="customer-grid"></div>
+        </section>
+
+      </main>
+    </div>
 
     <script src="/static/app.js"></script>
   </body>
