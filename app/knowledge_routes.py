@@ -68,12 +68,13 @@ def get_stats():
                 if f.is_file():
                     db_size += f.stat().st_size
 
-        # 统计片段数（复用 retriever 的全局向量库单例，不重复加载 Embedding 模型）
+        # 统计片段数（直接查 ChromaDB 集合，不加载 Embedding 模型）
         total_chunks = 0
         try:
-            from retriever import get_retriever
-            retriever_obj = get_retriever()
-            total_chunks = retriever_obj.vectorstore._collection.count()
+            import chromadb
+            client = chromadb.PersistentClient(path=settings.CHROMA_PERSIST_DIR)
+            collection = client.get_collection(settings.CHROMA_COLLECTION_NAME)
+            total_chunks = collection.count()
         except Exception as e:
             logger.warning(f"[Knowledge] 获取片段数失败: {e}")
 
