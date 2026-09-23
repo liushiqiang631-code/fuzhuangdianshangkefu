@@ -31,6 +31,7 @@ ENV/
 # IDE
 .idea/
 .vscode/
+.zcodeignore
 *.swp
 *.swo
 
@@ -42,22 +43,6 @@ data/sessions/
 data/feedback.jsonl
 data/memory/
 data/uploads/
-data/usage/
-
-# 废弃代码回收站
-_trash/
-
-# 日志
-logs/
-
-# 系统文件
-.DS_Store
-Thumbs.db
-
-# 废弃模块备份目录（确认无需恢复后可删除）
-_trash/
-
-# 运行时数据
 data/carts/
 data/branches/
 data/profiles/
@@ -70,3 +55,10 @@ data/test*/
 
 # pytest 临时目录
 .pytest_tmp/
+
+# 日志
+logs/
+
+# 系统文件
+.DS_Store
+Thumbs.db
