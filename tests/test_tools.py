@@ -124,8 +124,8 @@ class TestCartTools:
         _add_sample_item()
         result = create_order.invoke({
             "user_id": "test_user_001",
-            "address": "测试地址",
-            "phone": "13800138000",
+            "address": "演示城市示例路 1 号（虚构地址）",
+            "phone": "1XX-XXXX-0001",
         })
         assert "订单创建成功" in result
         assert "ORD-" in result
@@ -137,8 +137,8 @@ class TestCartTools:
     def test_create_order_empty_cart(self, isolated_data):
         result = create_order.invoke({
             "user_id": "test_user_001",
-            "address": "测试地址",
-            "phone": "13800138000",
+            "address": "演示城市示例路 1 号（虚构地址）",
+            "phone": "1XX-XXXX-0001",
         })
         assert "购物车是空的" in result
 
@@ -339,7 +339,7 @@ class TestOrders:
     def test_query_order_from_orders_json(self, isolated_data):
         """修复回归：create_order 写入的订单必须能被 query_order 查到"""
         _add_sample_item()
-        create_order.invoke({"user_id": "test_user_001", "address": "测试地址"})
+        create_order.invoke({"user_id": "test_user_001", "address": "演示城市示例路 1 号（虚构地址）"})
         orders = json.loads(isolated_data["orders_file"].read_text(encoding="utf-8"))
         oid = orders[0]["order_id"]
 
@@ -364,7 +364,7 @@ class TestOrders:
             "product_name": "经典纯棉T恤",
             "color": "黑色", "size": "M",
         })
-        create_order.invoke({"user_id": "U10001", "address": "测试地址"})
+        create_order.invoke({"user_id": "U10001", "address": "演示城市示例路 1 号（虚构地址）"})
         result = query_user_orders.invoke({"user_id": "U10001"})
         data = json.loads(result)
         # 既有种子订单也有新下单订单
