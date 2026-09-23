@@ -42,6 +42,10 @@ data/sessions/
 data/feedback.jsonl
 data/memory/
 data/uploads/
+data/usage/
+
+# 废弃代码回收站
+_trash/
 
 # 日志
 logs/

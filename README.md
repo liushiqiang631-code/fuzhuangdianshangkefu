@@ -1,8 +1,15 @@
+<div align="center">
+
 # 服装电商智能客服系统
 
-基于 **LangChain + RAG + Agent** 的服装电商智能客服系统，支持知识库检索、订单查询、价格计算、用户管理、多模型 Fallback、管理后台等完整功能。
+**基于 LangChain + RAG + Agent 的下一代智能客服**
 
-## 功能特性
+[![Python](https://img.shields.io/badge/Python-3.9+-blue?logo=python&logoColor=white)](https://python.org)
+[![LangChain](https://img.shields.io/badge/LangChain-1.2+-green?logo=langchain&logoColor=white)](https://langchain.com)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.110+-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
+[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
+*智能对话 · 知识库检索 · 订单查询 · 价格计算 · 管理后台*
 
 ### 核心能力
 - **智能对话**：多轮对话，上下文记忆，自动调用工具完成任务
@@ -10,19 +17,55 @@
 - **Agent 工具集**：36 个工具覆盖商品搜索、购物车下单、订单物流、优惠券促销、用户画像、转人工工单
 - **流式输出**：SSE 逐 token 返回，实时展示工具调用进度
 
-### 业务功能
-- **结构化商品搜索**：按分类、价格、颜色、尺码筛选商品
-- **订单查询**：支持订单号、用户维度的订单查询
-- **价格计算**：折扣、满减、会员价叠加计算
-- **用户激活**：新用户注册、信息查询、个性化推荐
+</div>
 
-### 系统特性
-- **多模型 Fallback**：主/备模型自动切换，冷却时间后自动恢复
-- **对话摘要**：长对话自动压缩，防止上下文溢出
-- **用户反馈**：每条回复支持 👍/👎 反馈，数据持久化
-- **情绪检测**：连续不满自动触发转人工提示
-- **图片上传**：支持图片文件上传和预览
-- **管理后台**：会话管理、反馈统计、日志查看
+---
+
+## 核心亮点
+
+| 特性 | 说明 |
+|:---|:---|
+| **智能对话** | 多轮对话 + 上下文记忆 + SSE 流式输出 |
+| **RAG 知识库** | ChromaDB 向量检索 + 中文 BGE Embedding |
+| **Agent 工具集** | 13 个工具覆盖商品、订单、价格、用户 |
+| **多模型 Fallback** | 主/备模型自动切换，故障自动恢复 |
+| **管理后台** | 会话管理、反馈统计、实时日志 |
+
+---
+
+## 功能展示
+
+### 智能客服对话
+
+```
+用户：有没有200元以下的黑色T恤？
+
+🤖 服装电商客服：好的，我来帮你搜索一下！
+
+找到 3 件符合条件的商品：
+
+【经典纯棉T恤】
+  价格：¥89（原价¥119，省¥30）
+  材质：100%新疆长绒棉
+  颜色：白色、黑色、灰色、藏青色
+  
+【印花圆领长袖T恤】
+  价格：¥129（原价¥179，省¥50）
+  材质：95%棉 5%氨纶
+  颜色：白色、黑色、灰色
+```
+
+### 工具调用
+
+```
+▶ 调用了 3 个工具
+
+  ✓ 搜索商品
+  ✓ 查询分类
+  ✓ 查询知识库
+```
+
+---
 
 ## 快速开始
 
@@ -70,6 +113,8 @@ python -m app.main
 
 双击 `启动服务.bat` 自动启动服务并打开浏览器。
 
+---
+
 ## 配置说明
 
 ### 环境变量 (.env)
@@ -87,10 +132,6 @@ EMBEDDING_MODEL=BAAI/bge-small-zh-v1.5
 # ChromaDB 配置
 CHROMA_PERSIST_DIR=./data/chroma_db
 CHROMA_COLLECTION_NAME=clothing_ecommerce
-
-# 应用配置
-APP_HOST=0.0.0.0
-APP_PORT=8000
 ```
 
 ### 多模型 Fallback
@@ -103,6 +144,8 @@ LLM_FALLBACK_API_KEY=sk-xxx
 LLM_FALLBACK_API_BASE=https://api.openai.com/v1
 LLM_FALLBACK_COOLDOWN=300  # 主模型冷却恢复时间（秒）
 ```
+
+---
 
 ## 项目结构
 
@@ -136,13 +179,14 @@ LLM_FALLBACK_COOLDOWN=300  # 主模型冷却恢复时间（秒）
 └── start.bat              # Windows 一键启动
 ```
 
+---
 
 ## API 接口
 
 ### 对话接口
 
 | 接口 | 方法 | 说明 |
-|------|------|------|
+|:---|:---:|:---|
 | `/chat` | POST | 智能客服对话（阻塞模式） |
 | `/chat/stream` | POST | 智能客服对话（SSE 流式） |
 | `/chat/rag-with-sources` | POST | RAG 问答（带来源） |
@@ -151,7 +195,7 @@ LLM_FALLBACK_COOLDOWN=300  # 主模型冷却恢复时间（秒）
 ### 数据接口
 
 | 接口 | 方法 | 说明 |
-|------|------|------|
+|:---|:---:|:---|
 | `/sessions` | GET | 列出活跃会话 |
 | `/tools` | GET | 列出可用工具 |
 | `/ingest` | POST | 导入知识库数据 |
@@ -163,7 +207,7 @@ LLM_FALLBACK_COOLDOWN=300  # 主模型冷却恢复时间（秒）
 ### 管理接口
 
 | 接口 | 方法 | 说明 |
-|------|------|------|
+|:---|:---:|:---|
 | `/admin` | GET | 管理后台页面 |
 | `/admin/sessions` | GET | 会话列表 |
 | `/admin/sessions/{id}` | GET | 会话详情 |
@@ -173,9 +217,11 @@ LLM_FALLBACK_COOLDOWN=300  # 主模型冷却恢复时间（秒）
 ### 健康检查
 
 | 接口 | 方法 | 说明 |
-|------|------|------|
+|:---|:---:|:---|
 | `/health` | GET | 系统状态 |
 | `/health/llm` | GET | LLM 连通性检查 |
+
+---
 
 ## 使用示例
 
@@ -211,10 +257,12 @@ curl -X POST http://localhost:8000/chat \
   -d '{"message": "有没有200元以下的黑色T恤？"}'
 ```
 
+---
+
 ## 工具集
 
 | 工具 | 功能 |
-|------|------|
+|:---|:---|
 | `knowledge_search` | 知识库检索（向量搜索） |
 | `get_product_info` | 商品信息查询 |
 | `search_products` | 结构化商品搜索（按分类/价格/颜色/尺码过滤） |
@@ -229,17 +277,21 @@ curl -X POST http://localhost:8000/chat \
 | `get_user_info` | 用户信息查询 |
 | `recommend_for_user` | 个性化推荐 |
 
+---
+
 ## 技术栈
 
 | 类别 | 技术 |
-|------|------|
-| AI 框架 | LangChain 1.2+ / LangGraph |
-| 向量数据库 | ChromaDB |
-| Embedding | BAAI/bge-small-zh-v1.5 |
-| Web 框架 | FastAPI |
-| 配置管理 | Pydantic Settings |
-| 前端渲染 | Marked.js (Markdown) |
-| LLM | DeepSeek / OpenAI 兼容接口 |
+|:---|:---|
+| **AI 框架** | LangChain 1.2+ / LangGraph |
+| **向量数据库** | ChromaDB |
+| **Embedding** | BAAI/bge-small-zh-v1.5 |
+| **Web 框架** | FastAPI |
+| **配置管理** | Pydantic Settings |
+| **前端渲染** | Marked.js (Markdown) |
+| **LLM** | DeepSeek / OpenAI 兼容接口 |
+
+---
 
 ## 知识库数据
 
@@ -251,6 +303,8 @@ curl -X POST http://localhost:8000/chat \
 - **尺码指南** (size_guide.md)：身体测量方法、男女尺码对照表
 - **店铺介绍** (store_info.md)：品牌故事、会员体系、售后保障
 
+---
+
 ## 管理后台
 
 访问 `/admin` 进入管理后台，支持：
@@ -259,6 +313,8 @@ curl -X POST http://localhost:8000/chat \
 - **知识库管理**：访问 `/knowledge` 页面，在线上传/编辑/删除/同步知识文档
 - **反馈统计**：好评率、好评/差评数量
 - **系统日志**：实时查看应用日志，支持 ERROR/WARNING 高亮
+
+---
 
 ## 部署说明
 
@@ -292,6 +348,8 @@ EXPOSE 8000
 CMD ["python", "-m", "app.main"]
 ```
 
+---
+
 ## 常见问题
 
 ### Q: 启动时报错 "No module named xxx"
@@ -314,9 +372,7 @@ A: 在 `.env` 中设置 `AUTH_ENABLED=true` 并修改 `AUTH_API_KEY`。开启后
 
 A: 检查 `.env` 文件中的 `OPENAI_API_KEY` 是否正确，DeepSeek 需要在 [deepseek.com](https://deepseek.com) 申请
 
-## 许可证
-
-MIT License
+---
 
 ## 贡献
 
@@ -327,3 +383,19 @@ MIT License
 3. 提交更改：`git commit -m 'Add your feature'`
 4. 推送分支：`git push origin feature/your-feature`
 5. 提交 Pull Request
+
+---
+
+## 许可证
+
+[MIT License](LICENSE)
+
+---
+
+<div align="center">
+
+**如果觉得有用，请点个 Star 支持一下！**
+
+[![Star History Chart](https://api.star-history.com/svg?repos=yourusername/zhice-platform&type=Date)](https://star-history.com/#yourusername/zhice-platform&Date)
+
+</div>
